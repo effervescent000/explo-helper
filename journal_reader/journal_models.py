@@ -1,8 +1,15 @@
-from enum import Enum
-from typing import Literal
+import json
+from typing import Literal, Optional
 from pydantic import BaseModel
 
-EventType = Enum("EventType", ["FSDTarget", "LeaveBody", "Liftoff", "Touchdown"])
+
+EventType = (
+    Literal["FSDTarget"]
+    | Literal["LeaveBody"]
+    | Literal["Liftoff"]
+    | Literal["Scan"]
+    | Literal["Touchdown"]
+)
 
 
 class JournalEvent(BaseModel):
@@ -19,13 +26,13 @@ class BodyEvent(SystemEvent):
 
 
 class ScanEvent(BodyEvent):
-    ScanType: Literal["Autoscan"] | Literal["Detailed"] | Literal["Basic"]
-    DistanceFromArrivalLS: float
-    AtmosphereType: str
-    SurfaceGravity: float
-    SurfaceTemperature: float
-    Landable: bool
-    SemiMajorAxis: float
+    ScanType: Literal["AutoScan"] | Literal["Detailed"] | Literal["Basic"]
+    DistanceFromArrivalLS: Optional[float] = None
+    AtmosphereType: Optional[str] = None
+    SurfaceGravity: Optional[float] = None
+    SurfaceTemperature: Optional[float] = None
+    Landable: Optional[bool] = None
+    SemiMajorAxis: Optional[float] = None
     WasDiscovered: bool
     WasMapped: bool
 
@@ -36,7 +43,8 @@ event_mapping = {"Scan": ScanEvent}
 class Log(BaseModel):
     events: list[JournalEvent] = []
 
-    def append(self, data: JournalEvent) -> None:
-        event_type = event_mapping.get(data.event.name, None)
+    def append(self, data: str) -> None:
+        parsed = json.loads(data)
+        event_type = event_mapping.get(parsed["event"], None)
         if event_type is not None:
-            self.events.append(event_type(**data.model_dump()))
+            self.events.append(event_type(**parsed))
