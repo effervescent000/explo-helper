@@ -8,6 +8,7 @@ EventType = (
     | Literal["LeaveBody"]
     | Literal["Liftoff"]
     | Literal["Scan"]
+    | Literal["ScanOrganic"]
     | Literal["SellExplorationData"]
     | Literal["SellOrganicData"]
     | Literal["Touchdown"]
@@ -59,8 +60,18 @@ class ScanEvent(BodyEvent):
     WasMapped: bool
 
 
+class ScanOrganicEvent(JournalEvent):
+    ScanType: Literal["Log"] | Literal["Sample"] | Literal["Analyse"]
+    Genus_Localised: str
+    Species_Localised: str
+    Variant_Localised: str
+    SystemAddress: int
+    Body: int
+
+
 event_mapping = {
     "Scan": ScanEvent,
+    "ScanOrganic": ScanOrganicEvent,
     "SellExplorationData": SellCartographicsEvent,
     "SellOrganicData": SellOrganicDataEvent,
 }
