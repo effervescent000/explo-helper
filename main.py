@@ -1,24 +1,19 @@
 import tkinter as tk
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import LEFT
 
 from gui import GUI
 from journal_reader.journal_reader import JournalReader
 
 root = tk.Tk()
 
+reader = JournalReader()
+reader.compile_journals()
+observer = reader.monitor_journals()
 
-def handle_click(_: tk.Event):
-    reader = JournalReader()
-    reader.compile_journals()
-    reader.monitor_journals()
+gui = GUI(reader.log, root)
+gui.build_trip_summary()
 
-    gui = GUI(reader.log, root)
-    gui.build_trip_summary()
-
-
-button = ttk.Button(root, text="HELLO WORLD")
-button.pack(side=LEFT, padx=5, pady=5)
-button.bind("<Button-1>", handle_click)
 
 root.mainloop()
+
+observer.stop()
+observer.join()

@@ -1,10 +1,10 @@
 from pathlib import Path
 import re
 import os
-from time import sleep
 
 
 from watchdog.observers import Observer
+from watchdog.observers.api import BaseObserver
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
 from journal_reader.journal_models import Log
@@ -60,14 +60,10 @@ class JournalReader:
                 for line in file.readlines():
                     self.log.append(line)
 
-    def monitor_journals(self) -> None:
+    def monitor_journals(self) -> BaseObserver:
         event_handler = JournalEventHandler(log=self.log)
         observer = Observer()
         observer.schedule(event_handler, self.file_location)
         observer.start()
-        try:
-            while True:
-                sleep(10)
-        except KeyboardInterrupt:
-            observer.stop()
-            observer.join()
+
+        return observer
