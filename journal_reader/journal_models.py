@@ -2,6 +2,8 @@ import json
 from typing import Literal, Optional
 from pydantic import BaseModel
 
+from values import HMCB
+
 
 EventType = (
     Literal["FSDTarget"]
@@ -50,6 +52,8 @@ class BodyEvent(SystemEvent):
 
 class ScanEvent(BodyEvent):
     ScanType: Literal["AutoScan"] | Literal["Detailed"] | Literal["Basic"]
+    PlanetClass: str | None = None
+    TerraformState: str | None = None
     DistanceFromArrivalLS: Optional[float] = None
     AtmosphereType: Optional[str] = None
     SurfaceGravity: Optional[float] = None
