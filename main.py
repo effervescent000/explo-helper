@@ -7,9 +7,10 @@ from journal_reader.journal_reader import JournalReader
 root = tk.Tk()
 
 
-def handle_click(event: tk.Event):
+def handle_click(_: tk.Event):
     reader = JournalReader()
     reader.compile_journals()
+    reader.monitor_journals()
 
 
 button = ttk.Button(root, text="HELLO WORLD")

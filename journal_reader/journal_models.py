@@ -43,8 +43,36 @@ event_mapping = {"Scan": ScanEvent}
 class Log(BaseModel):
     events: list[JournalEvent] = []
 
-    def append(self, data: str) -> None:
+    def convert_str_to_event(self, data: str | JournalEvent) -> JournalEvent | None:
+        if isinstance(data, JournalEvent):
+            return data
         parsed = json.loads(data)
         event_type = event_mapping.get(parsed["event"], None)
         if event_type is not None:
-            self.events.append(event_type(**parsed))
+            return event_type(**parsed)
+
+    def append(self, data: str | JournalEvent) -> None:
+        event = self.convert_str_to_event(data)
+        if event is not None:
+            self.events.append(event)
+
+    def find_event(
+        self, data: str | JournalEvent, reverse: bool = False
+    ) -> JournalEvent | None:
+        """
+        Pass in either a raw journal str or processed event, receive the first matching event
+        (from oldest to newest by default).
+        """
+        event = self.convert_str_to_event(data) if isinstance(data, str) else data
+        if event is None:
+            return
+
+        dataset = [*self.events]
+        if reverse:
+            dataset = list(reversed(dataset))
+        for logged_event in dataset:
+            if (
+                event.timestamp == logged_event.timestamp
+                and event.event == logged_event.event
+            ):
+                return logged_event
