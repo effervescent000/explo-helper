@@ -8,6 +8,8 @@ EventType = (
     | Literal["LeaveBody"]
     | Literal["Liftoff"]
     | Literal["Scan"]
+    | Literal["SellExplorationData"]
+    | Literal["SellOrganicData"]
     | Literal["Touchdown"]
 )
 
@@ -15,6 +17,26 @@ EventType = (
 class JournalEvent(BaseModel):
     timestamp: str
     event: EventType
+
+
+class SellCartographicsEvent(JournalEvent):
+    Systems: list[str]
+    Discovered: list[str]
+    BaseValue: int
+    Bonus: int
+    TotalEarnings: int
+
+
+class BioData(BaseModel):
+    Genus_Localised: str
+    Species_Localised: str
+    Variant_Localised: str
+    Value: int
+    Bonus: int
+
+
+class SellOrganicDataEvent(JournalEvent):
+    BioData: list[BioData]
 
 
 class SystemEvent(JournalEvent):
@@ -37,7 +59,11 @@ class ScanEvent(BodyEvent):
     WasMapped: bool
 
 
-event_mapping = {"Scan": ScanEvent}
+event_mapping = {
+    "Scan": ScanEvent,
+    "SellExplorationData": SellCartographicsEvent,
+    "SellOrganicData": SellOrganicDataEvent,
+}
 
 
 class Log(BaseModel):
@@ -76,3 +102,21 @@ class Log(BaseModel):
                 and event.event == logged_event.event
             ):
                 return logged_event
+
+    def get_until_event(
+        self, event_types: list[EventType], reverse: bool = False
+    ) -> list[JournalEvent]:
+        """Get all events (from start by default) until event of target type is found."""
+        matching_events: list[JournalEvent] = []
+        dataset = [*self.events]
+        if reverse:
+            dataset = list(reversed(dataset))
+
+        for event in dataset:
+            if event.event in event_types:
+                break
+            matching_events.append(event)
+
+        if reverse:
+            matching_events = list(reversed(matching_events))
+        return matching_events
