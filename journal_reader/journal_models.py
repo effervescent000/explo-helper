@@ -2,13 +2,12 @@ import json
 from typing import Literal, Optional
 from pydantic import BaseModel
 
-from values import HMCB
-
-
 EventType = (
-    Literal["FSDTarget"]
+    Literal["DiscoveryScan"]
+    | Literal["FSDJump"]
     | Literal["LeaveBody"]
     | Literal["Liftoff"]
+    | Literal["SAAScanComplete"]
     | Literal["Scan"]
     | Literal["ScanOrganic"]
     | Literal["SellExplorationData"]
@@ -20,6 +19,12 @@ EventType = (
 class JournalEvent(BaseModel):
     timestamp: str
     event: EventType
+
+
+class FSDJumpEvent(JournalEvent):
+    StarSystem: str
+    SystemAddress: int
+    StarPos: str
 
 
 class SellCartographicsEvent(JournalEvent):
@@ -42,16 +47,12 @@ class SellOrganicDataEvent(JournalEvent):
     BioData: list[BioData]
 
 
-class SystemEvent(JournalEvent):
-    StarSystem: str
-
-
-class BodyEvent(SystemEvent):
-    BodyName: str
-
-
-class ScanEvent(BodyEvent):
+class ScanEvent(JournalEvent):
     ScanType: Literal["AutoScan"] | Literal["Detailed"] | Literal["Basic"]
+    StarSystem: str
+    SystemAddress: int
+    BodyName: str
+    BodyID: int
     PlanetClass: str | None = None
     TerraformState: str | None = None
     DistanceFromArrivalLS: Optional[float] = None
@@ -64,6 +65,11 @@ class ScanEvent(BodyEvent):
     WasMapped: bool
 
 
+class DiscoveryScanEvent(JournalEvent):
+    SystemAddress: int
+    Bodies: int
+
+
 class ScanOrganicEvent(JournalEvent):
     ScanType: Literal["Log"] | Literal["Sample"] | Literal["Analyse"]
     Genus_Localised: str
@@ -73,7 +79,18 @@ class ScanOrganicEvent(JournalEvent):
     Body: int
 
 
+class DSSEvent(JournalEvent):
+    SystemAddress: int
+    BodyName: str
+    BodyID: int
+    ProbesUsed: int
+    EfficiencyTarget: int
+
+
 event_mapping = {
+    "DiscoveryScan": DiscoveryScanEvent,
+    "FSDJump": FSDJumpEvent,
+    "SAAScanComplete": DSSEvent,
     "Scan": ScanEvent,
     "ScanOrganic": ScanOrganicEvent,
     "SellExplorationData": SellCartographicsEvent,

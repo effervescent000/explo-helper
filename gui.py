@@ -1,13 +1,14 @@
 from tkinter.ttk import Frame, Label
+from db.galaxy import Galaxy
 from journal_reader.journal_models import Log
 from trip_logger.trip import Trip
 
 
 class GUI:
-    def __init__(self, log: Log, tk) -> None:
+    def __init__(self, log: Log, tk, galaxy: Galaxy) -> None:
         self.log = log
         self.tk_instance = tk
-        self.trip = Trip()
+        self.trip = Trip(galaxy)
 
     def build_trip_summary(self) -> None:
         events = self.log.get_until_event(
