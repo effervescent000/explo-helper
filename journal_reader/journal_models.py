@@ -1,5 +1,5 @@
 import json
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 from pydantic import BaseModel
 
 EventType = (
@@ -20,11 +20,22 @@ class JournalEvent(BaseModel):
     timestamp: str
     event: EventType
 
+    def dump(self) -> dict[str, Any]:
+        """Meant to be overridden by subclasses."""
+        return {}
+
 
 class FSDJumpEvent(JournalEvent):
     StarSystem: str
     SystemAddress: int
-    StarPos: str
+    StarPos: list[float]
+
+    def dump(self) -> dict[str, Any]:
+        return {
+            "system_name": self.StarSystem,
+            "system_address": self.SystemAddress,
+            "star_pos": self.StarPos,
+        }
 
 
 class SellCartographicsEvent(JournalEvent):
