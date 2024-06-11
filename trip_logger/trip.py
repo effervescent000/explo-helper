@@ -56,7 +56,5 @@ class Trip:
                 if self.galaxy.current_system is not None:
                     planet = self.galaxy.current_system.planets.get(event.BodyID, None)
                     if planet is not None:
-                        value = VALUES.get(planet.planet_class or "", {}).get(
-                            TERRAFORMABLE if planet.terraformable else BASE, 0
-                        )
-                self.mapped_value += value * DSS_MULTIPLIER - value
+                        value = planet.values.mapped
+                self.mapped_value += value
