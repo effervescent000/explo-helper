@@ -32,7 +32,7 @@ class Trip:
 
     @property
     def bodies_scanned_value(self) -> int:
-        return round(sum(x.values.base for x in self.bodies_scanned))
+        return round(sum(x.values_actual.base for x in self.bodies_scanned))
 
     @property
     def bodies_mapped_count(self) -> int:
@@ -40,11 +40,11 @@ class Trip:
 
     @property
     def bodies_mapped_value(self) -> int:
-        return round(sum(x.values.mapped for x in self.bodies_mapped))
+        return round(sum(x.values_actual.mapped for x in self.bodies_mapped))
 
     @property
     def bonuses(self) -> int:
-        return round(sum(x.values.bonuses for x in self.bodies_scanned))
+        return round(sum(x.values_actual.bonuses for x in self.bodies_scanned))
 
     def add_entries(self, events: Sequence[JournalEvent]) -> None:
         for event in events:

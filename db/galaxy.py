@@ -12,8 +12,8 @@ class BodyValues(BaseModel):
     @property
     def total_value(self) -> float:
         if self.mapped != 0:
-            return self.mapped + self.bonuses
-        return self.base + self.bonuses
+            return round(self.mapped + self.bonuses)
+        return round(self.base + self.bonuses)
 
 
 class Body(BaseModel):
@@ -28,7 +28,7 @@ class Body(BaseModel):
         return self.BodyName.replace(self.system_name, "").strip()
 
     @property
-    def values(self) -> BodyValues:
+    def values_actual(self) -> BodyValues:
         return BodyValues(base=0, mapped=0, bonuses=0)
 
 
@@ -52,8 +52,7 @@ class Planet(Body):
         self.detailed_scan_by_player = True
         self.was_discovered = event.WasDiscovered
 
-    @property
-    def values(self) -> BodyValues:
+    def _calc_values(self, mapped_by_player: bool) -> BodyValues:
         k = VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
         if self.terraformable:
             k += VALUES.get(self.planet_class or "", VALUES_ELSE).get(TERRAFORMABLE, 0)
@@ -64,7 +63,7 @@ class Planet(Body):
         fss_final_value = round(max(fss_value, 500))
         values.base = fss_final_value
 
-        if self.mapped_by_player:
+        if mapped_by_player:
             mapped_value_baseline = fss_value * 3.3333333333
             values.mapped = mapped_value_baseline
 
@@ -89,10 +88,18 @@ class Planet(Body):
         return values
 
     @property
+    def values_actual(self) -> BodyValues:
+        return self._calc_values(self.mapped_by_player)
+
+    @property
+    def values_estimate(self) -> BodyValues:
+        return self._calc_values(mapped_by_player=True)
+
+    @property
     def mass(self) -> float:
         if self._mass is not None:
             return self._mass
-        return MEDIAN_MASS.get(self.planet_class, {}).get(
+        return MEDIAN_MASS.get(self.planet_class or "", {}).get(
             TERRAFORMABLE if self.terraformable else BASE, 0.4
         )
 

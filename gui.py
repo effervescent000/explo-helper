@@ -75,7 +75,11 @@ class GUI:
             styledLabel(text=headers[i], master=self.system_tab).grid(row=0, column=i)
         if system is not None:
             for i, body in enumerate(system.planets.values()):
-                labels = [body.name, body.planet_class, f"{body.values.mapped:,}"]
+                labels = [
+                    body.name,
+                    body.planet_class,
+                    f"{body.values_estimate.total_value:,}",
+                ]
                 signals_frame = Frame(self.system_tab)
                 signals_frame.grid(row=i * 2 + 2, column=1, columnspan=2)
                 child_content = styledLabel(
