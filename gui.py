@@ -72,7 +72,14 @@ class GUI:
         if system is not None:
             for i, body in enumerate(system.planets.values()):
                 labels = [body.name, body.planet_class, f"{body.values.mapped:,}"]
+                signals_frame = Frame(self.system_tab)
+                signals_frame.grid(row=i * 2 + 2, column=1, columnspan=2)
+                child_content = styledLabel(
+                    text="Hello I am a child label", master=signals_frame
+                )
                 for j, label in enumerate(labels):
                     styledLabel(text=label, master=self.system_tab).grid(
-                        row=i + 1, column=j
+                        row=i * 2 + 1, column=j
                     )
+                if i % 3 == 0:
+                    child_content.pack()
