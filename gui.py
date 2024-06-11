@@ -30,30 +30,31 @@ class GUI:
         summary_frame.pack()
 
         planets_scanned_label = styledLabel(
-            text=f"Scanned bodies: {self.trip.bodies_scanned}", master=summary_frame
+            text=f"Scanned bodies: {self.trip.bodies_scanned_count}",
+            master=summary_frame,
         )
         scanned_value_label = styledLabel(
-            text=f"Scanned bodies' value: {self.trip.scanned_value:,}",
+            text=f"Scanned bodies' value: {self.trip.bodies_scanned_value:,}",
             master=summary_frame,
         )
         planets_mapped_count_label = styledLabel(
-            text=f"Mapped bodies: {self.trip.bodies_mapped}", master=summary_frame
+            text=f"Mapped bodies: {self.trip.bodies_mapped_count}", master=summary_frame
         )
         planets_mapped_value_label = styledLabel(
-            text=f"Mapped bodies' value: {self.trip.mapped_value:,}",
+            text=f"Mapped bodies' value: {self.trip.bodies_mapped_value:,}",
             master=summary_frame,
         )
         bonuses_label = styledLabel(
-            text=f"Bonuses: {self.trip.bonus_value:,}", master=summary_frame
+            text=f"Bonuses: {self.trip.bonuses:,}", master=summary_frame
         )
 
         scanned_labels = [planets_scanned_label, scanned_value_label]
         for i in range(len(scanned_labels)):
-            scanned_labels[i].grid(row=0, column=i)
+            scanned_labels[i].grid(row=i, column=0)
 
         mapped_labels = [planets_mapped_count_label, planets_mapped_value_label]
         for i in range(len(mapped_labels)):
-            mapped_labels[i].grid(row=1, column=i)
+            mapped_labels[i].grid(row=i, column=1)
 
         bonuses_label.grid(row=1, column=2, rowspan=2)
 

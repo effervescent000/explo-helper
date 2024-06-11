@@ -27,6 +27,10 @@ class Body(BaseModel):
     def name(self) -> str:
         return self.BodyName.replace(self.system_name, "").strip()
 
+    @property
+    def values(self) -> BodyValues:
+        return BodyValues(base=0, mapped=0, bonuses=0)
+
 
 class Star(Body):
     star_class: str
@@ -117,6 +121,8 @@ class System(BaseModel):
                 terraformable=bool(event.TerraformState),
                 detailed_scan_by_player=event.ScanType == "Detailed",
                 system_name=event.StarSystem,
+                was_discovered=event.WasDiscovered,
+                was_mapped=event.WasMapped,
             )
         elif event.ScanType == "Detailed":
             self.planets[body_id].update_from_fss(event)

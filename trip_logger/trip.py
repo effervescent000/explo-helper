@@ -1,5 +1,5 @@
 from typing import Sequence
-from db.galaxy import Galaxy, System
+from db.galaxy import Body, Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
     FSDJumpEvent,
@@ -23,12 +23,28 @@ class Trip:
     def __init__(self, galaxy: Galaxy) -> None:
         self.galaxy = galaxy
 
-        self.bodies_scanned = 0
-        self.bodies_mapped = 0
+        self.bodies_scanned: list[Body] = []
+        self.bodies_mapped: list[Planet] = []
 
-        self.scanned_value = 0
-        self.mapped_value = 0
-        self.bonus_value = 0
+    @property
+    def bodies_scanned_count(self) -> int:
+        return len(self.bodies_scanned)
+
+    @property
+    def bodies_scanned_value(self) -> int:
+        return round(sum(x.values.base for x in self.bodies_scanned))
+
+    @property
+    def bodies_mapped_count(self) -> int:
+        return len(self.bodies_mapped)
+
+    @property
+    def bodies_mapped_value(self) -> int:
+        return round(sum(x.values.mapped for x in self.bodies_mapped))
+
+    @property
+    def bonuses(self) -> int:
+        return round(sum(x.values.bonuses for x in self.bodies_scanned))
 
     def add_entries(self, events: Sequence[JournalEvent]) -> None:
         for event in events:
@@ -44,15 +60,19 @@ class Trip:
                     new_scan = is_new_scan(self.galaxy.current_system, event)
                     planet = self.galaxy.current_system.add_planet_from_scan(event)
                     if new_scan is True:
-                        self.bodies_scanned += 1
-                        self.scanned_value += planet.values.base
+                        self.bodies_scanned.append(planet)
+                    # if new_scan is True:
+                    #     self.bodies_scanned += 1
+                    #     self.scanned_value += planet.values.base
                 continue
 
             if isinstance(event, DSSEvent):
-                self.bodies_mapped += 1
-                value = 0
+                # self.bodies_mapped += 1
+                # value = 0
                 if self.galaxy.current_system is not None:
                     planet = self.galaxy.current_system.planets.get(event.BodyID, None)
                     if planet is not None:
-                        value = planet.values.mapped
-                self.mapped_value += value
+                        planet.mapped_by_player = True
+                        self.bodies_mapped.append(planet)
+                        # value = planet.values.mapped
+                # self.mapped_value += value
