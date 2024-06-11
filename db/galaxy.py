@@ -1,7 +1,8 @@
+import math
 from pydantic import BaseModel
 
 from journal_reader.journal_models import DiscoveryScanEvent, FSDJumpEvent, ScanEvent
-from values import BASE, DSS_MULTIPLIER, TERRAFORMABLE, VALUES
+from values import BASE, MEDIAN_MASS, TERRAFORMABLE, VALUES, VALUES_ELSE
 
 
 class BodyValues(BaseModel):
@@ -30,23 +31,56 @@ class Planet(Body):
     planet_class: str | None = None
     terraformable: bool = False
     detailed_scan_by_player: bool = False
-    discovered: bool = False
+    was_discovered: bool = False
+    was_mapped: bool = False
+
+    _mass: float | None = None
 
     def update_from_fss(self, event: ScanEvent) -> None:
         self.planet_class = event.PlanetClass
         self.terraformable = bool(event.TerraformState)
         self.detailed_scan_by_player = True
-        self.discovered = event.WasDiscovered
+        self.was_discovered = event.WasDiscovered
 
     @property
     def values(self) -> BodyValues:
-        fss_value = VALUES.get(self.planet_class or "", {}).get(
-            TERRAFORMABLE if self.terraformable else BASE, 0
+        k = VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
+        if self.terraformable:
+            k += VALUES.get(self.planet_class or "", VALUES_ELSE).get(TERRAFORMABLE, 0)
+
+        fss_value = k + (k * self.mass**0.2 * 0.56591828)
+        fss_final_value = round(max(fss_value, 500))
+
+        mapped_value = fss_value * 3.3333333333
+        mapping_first_bonus_multiplier = 0
+        if self.was_discovered is False:
+            mapping_first_bonus_multiplier = 3.699622554
+        elif self.was_mapped is False:
+            mapping_first_bonus_multiplier = 8.0956
+
+        mapping_bonus_value = fss_value * mapping_first_bonus_multiplier - mapped_value
+        total_value = mapping_bonus_value + mapped_value
+
+        first_discovery_bonus_value = (
+            total_value * 2.6 - total_value if self.was_discovered is False else 0
         )
+
         return BodyValues(
-            base=fss_value,
-            mapped=round(fss_value * DSS_MULTIPLIER - fss_value),
-            bonuses=0,
+            base=fss_final_value,
+            mapped=round(mapped_value),
+            bonuses=round(
+                mapping_bonus_value
+                + first_discovery_bonus_value
+                + max(total_value * 0.3, 555)
+            ),
+        )
+
+    @property
+    def mass(self) -> float:
+        if self._mass is not None:
+            return self._mass
+        return MEDIAN_MASS.get(self.planet_class, {}).get(
+            TERRAFORMABLE if self.terraformable else BASE, 0.4
         )
 
 

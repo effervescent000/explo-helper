@@ -1,12 +1,12 @@
 from typing import Sequence
-from db.galaxy import Galaxy, System
+from db.galaxy import Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
     FSDJumpEvent,
     JournalEvent,
     ScanEvent,
 )
-from values import BASE, DSS_MULTIPLIER, TERRAFORMABLE, VALUES
+from values import BASE, TERRAFORMABLE, VALUES
 
 
 def is_new_scan(system: System, event: ScanEvent) -> bool:
@@ -42,12 +42,12 @@ class Trip:
                 and event.PlanetClass is not None
             ):
                 if self.galaxy.current_system:
-                    if is_new_scan(self.galaxy.current_system, event) is True:
+                    new_scan = is_new_scan(self.galaxy.current_system, event)
+                    planet = self.galaxy.current_system.add_planet_from_scan(event)
+                    if new_scan is True:
                         self.bodies_scanned += 1
-                        self.scanned_value += VALUES.get(
-                            event.PlanetClass or "", {}
-                        ).get(TERRAFORMABLE if bool(event.TerraformState) else BASE, 0)
-                    self.galaxy.current_system.add_planet_from_scan(event)
+                        self.scanned_value += planet.values.base
+
                 continue
 
             if isinstance(event, DSSEvent):

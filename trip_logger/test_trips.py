@@ -1,7 +1,6 @@
 from conftest import PRIMARY_PLANET_ID
 from shapes import scan_event_factory
 from trip_logger.trip import Trip
-from values import BASE, ROCKY, VALUES
 
 
 def test_trip_add_entries_fss_scan(testing_trip: Trip) -> None:
@@ -14,7 +13,7 @@ def test_trip_add_entries_fss_scan(testing_trip: Trip) -> None:
 
     testing_trip.add_entries(events)
 
-    assert testing_trip.scanned_value == VALUES.get(ROCKY, {}).get(BASE)
+    assert testing_trip.scanned_value == 500
     assert testing_trip.bodies_scanned == 1
 
 
@@ -28,5 +27,5 @@ def test_trip_add_entries_autoscan_then_fss(testing_trip: Trip) -> None:
 
     testing_trip.add_entries(events)
 
-    assert testing_trip.scanned_value == VALUES.get(ROCKY, {}).get(BASE)
+    assert testing_trip.scanned_value == 500
     assert testing_trip.bodies_scanned == 1
