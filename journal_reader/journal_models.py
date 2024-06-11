@@ -5,9 +5,11 @@ from pydantic import BaseModel
 EventType = (
     Literal["DiscoveryScan"]
     | Literal["FSDJump"]
+    | Literal["FSSBodySignals"]
     | Literal["LeaveBody"]
     | Literal["Liftoff"]
     | Literal["SAAScanComplete"]
+    | Literal["SAASignalsFound"]
     | Literal["Scan"]
     | Literal["ScanOrganic"]
     | Literal["SellExplorationData"]
@@ -36,6 +38,30 @@ class FSDJumpEvent(JournalEvent):
             "system_address": self.SystemAddress,
             "star_pos": self.StarPos,
         }
+
+
+class GenericSignal(BaseModel):
+    Type: str
+    Type_Localised: str | None = None
+    Count: int
+
+
+class FSSSignalEvent(JournalEvent):
+    BodyID: int
+    SystemAddress: int
+    Signals: list[GenericSignal] = []
+
+
+class Genus(BaseModel):
+    Genus: str
+    Genus_Localised: str
+
+
+class DSSSignalEvent(JournalEvent):
+    BodyID: int
+    SystemAddress: int
+    Signals: list[GenericSignal] = []
+    Genuses: list[Genus] = []
 
 
 class SellCartographicsEvent(JournalEvent):
@@ -101,7 +127,9 @@ class DSSEvent(JournalEvent):
 event_mapping = {
     "DiscoveryScan": DiscoveryScanEvent,
     "FSDJump": FSDJumpEvent,
+    "FSSBodySignals": FSSSignalEvent,
     "SAAScanComplete": DSSEvent,
+    "SAASignalsFound": DSSSignalEvent,
     "Scan": ScanEvent,
     "ScanOrganic": ScanOrganicEvent,
     "SellExplorationData": SellCartographicsEvent,
