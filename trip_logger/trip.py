@@ -1,12 +1,11 @@
 from typing import Sequence
-from db.galaxy import Galaxy, Planet, System
+from db.galaxy import Galaxy, System
 from journal_reader.journal_models import (
     DSSEvent,
     FSDJumpEvent,
     JournalEvent,
     ScanEvent,
 )
-from values import BASE, TERRAFORMABLE, VALUES
 
 
 def is_new_scan(system: System, event: ScanEvent) -> bool:
