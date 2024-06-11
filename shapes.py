@@ -47,7 +47,9 @@ def planet_factory(
     planet_class: str | None = None,
     terraformable: bool = False,
     detailed_scan_by_player: bool = False,
-    discovered: bool = False,
+    was_discovered: bool = False,
+    was_mapped: bool = False,
+    mapped_by_player: bool = False,
 ) -> Planet:
     return Planet(
         system_name=StarSystem or "DONT CARE",
@@ -57,5 +59,7 @@ def planet_factory(
         planet_class=planet_class or ROCKY,
         terraformable=terraformable,
         detailed_scan_by_player=detailed_scan_by_player,
-        was_discovered=discovered,
+        was_discovered=was_discovered,
+        was_mapped=was_mapped,
+        mapped_by_player=mapped_by_player,
     )

@@ -46,7 +46,6 @@ class Trip:
                     if new_scan is True:
                         self.bodies_scanned += 1
                         self.scanned_value += planet.values.base
-
                 continue
 
             if isinstance(event, DSSEvent):

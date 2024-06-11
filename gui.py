@@ -32,18 +32,19 @@ class GUI:
         planets_scanned_label = styledLabel(
             text=f"Scanned bodies: {self.trip.bodies_scanned}", master=summary_frame
         )
-
         scanned_value_label = styledLabel(
             text=f"Scanned bodies' value: {self.trip.scanned_value:,}",
             master=summary_frame,
         )
-
         planets_mapped_count_label = styledLabel(
             text=f"Mapped bodies: {self.trip.bodies_mapped}", master=summary_frame
         )
         planets_mapped_value_label = styledLabel(
             text=f"Mapped bodies' value: {self.trip.mapped_value:,}",
             master=summary_frame,
+        )
+        bonuses_label = styledLabel(
+            text=f"Bonuses: {self.trip.bonus_value:,}", master=summary_frame
         )
 
         scanned_labels = [planets_scanned_label, scanned_value_label]
@@ -53,6 +54,8 @@ class GUI:
         mapped_labels = [planets_mapped_count_label, planets_mapped_value_label]
         for i in range(len(mapped_labels)):
             mapped_labels[i].grid(row=1, column=i)
+
+        bonuses_label.grid(row=1, column=2, rowspan=2)
 
     def setup_tabs(self) -> None:
         self.notebook.add(self.route_tab, text="Route")
