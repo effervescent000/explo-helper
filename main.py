@@ -13,6 +13,8 @@ observer = reader.monitor_journals()
 
 gui = GUI(reader.log, root, galaxy)
 gui.build_trip_snapshot()
+gui.setup_tabs()
+gui.build_tab_contents()
 
 
 root.mainloop()

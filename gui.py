@@ -1,12 +1,12 @@
-from ttkbootstrap import Frame, Label
+from ttkbootstrap import Frame, Label, Notebook
 
 from db.galaxy import Galaxy
 from journal_reader.journal_models import Log
 from trip_logger.trip import Trip
 
 
-def styledLabel(**kwargs) -> Label:
-    return Label(**kwargs)
+def styledLabel(text: str, **kwargs) -> Label:
+    return Label(text=text, **kwargs)
 
 
 class GUI:
@@ -14,6 +14,11 @@ class GUI:
         self.log = log
         self.tk_instance = tk
         self.trip = Trip(galaxy)
+
+        self.notebook = Notebook(self.tk_instance)
+        self.route_tab = Frame(self.notebook)
+        self.system_tab = Frame(self.notebook)
+        self.summary_tab = Frame(self.notebook)
 
     def build_trip_snapshot(self) -> None:
         events = self.log.get_until_event(
@@ -48,3 +53,26 @@ class GUI:
         mapped_labels = [planets_mapped_count_label, planets_mapped_value_label]
         for i in range(len(mapped_labels)):
             mapped_labels[i].grid(row=1, column=i)
+
+    def setup_tabs(self) -> None:
+        self.notebook.add(self.route_tab, text="Route")
+        self.notebook.add(self.system_tab, text="Current system")
+        self.notebook.add(self.summary_tab, text="Summary")
+
+        self.notebook.pack()
+
+    def build_tab_contents(self) -> None:
+        self._build_system_tab()
+
+    def _build_system_tab(self) -> None:
+        system = self.trip.galaxy.current_system
+        headers = ["Name", "Type", "Mapped Value"]
+        for i in range(len(headers)):
+            styledLabel(text=headers[i], master=self.system_tab).grid(row=0, column=i)
+        if system is not None:
+            for i, body in enumerate(system.planets.values()):
+                labels = [body.name, body.planet_class, f"{body.values.mapped:,}"]
+                for j, label in enumerate(labels):
+                    styledLabel(text=label, master=self.system_tab).grid(
+                        row=i + 1, column=j
+                    )

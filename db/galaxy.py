@@ -1,11 +1,25 @@
 from pydantic import BaseModel
 
 from journal_reader.journal_models import DiscoveryScanEvent, FSDJumpEvent, ScanEvent
+from values import BASE, DSS_MULTIPLIER, TERRAFORMABLE, VALUES
+
+
+class BodyValues(BaseModel):
+    base: int
+    mapped: int
+    bonuses: int
 
 
 class Body(BaseModel):
     SystemAddress: int
     BodyID: int
+    BodyName: str
+
+    system_name: str
+
+    @property
+    def name(self) -> str:
+        return self.BodyName.replace(self.system_name, "").strip()
 
 
 class Star(Body):
@@ -16,11 +30,24 @@ class Planet(Body):
     planet_class: str | None = None
     terraformable: bool = False
     detailed_scan_by_player: bool = False
+    discovered: bool = False
 
     def update_from_fss(self, event: ScanEvent) -> None:
         self.planet_class = event.PlanetClass
         self.terraformable = bool(event.TerraformState)
         self.detailed_scan_by_player = True
+        self.discovered = event.WasDiscovered
+
+    @property
+    def values(self) -> BodyValues:
+        fss_value = VALUES.get(self.planet_class or "", {}).get(
+            TERRAFORMABLE if self.terraformable else BASE, 0
+        )
+        return BodyValues(
+            base=fss_value,
+            mapped=round(fss_value * DSS_MULTIPLIER - fss_value),
+            bonuses=0,
+        )
 
 
 class System(BaseModel):
@@ -41,10 +68,12 @@ class System(BaseModel):
         if body_id not in self.planets:
             self.planets[body_id] = Planet(
                 SystemAddress=self.system_address,
+                BodyName=event.BodyName,
                 BodyID=body_id,
                 planet_class=event.PlanetClass,
                 terraformable=bool(event.TerraformState),
                 detailed_scan_by_player=event.ScanType == "Detailed",
+                system_name=event.StarSystem,
             )
         elif event.ScanType == "Detailed":
             self.planets[body_id].update_from_fss(event)
