@@ -61,18 +61,11 @@ class Trip:
                     planet = self.galaxy.current_system.add_planet_from_scan(event)
                     if new_scan is True:
                         self.bodies_scanned.append(planet)
-                    # if new_scan is True:
-                    #     self.bodies_scanned += 1
-                    #     self.scanned_value += planet.values.base
                 continue
 
             if isinstance(event, DSSEvent):
-                # self.bodies_mapped += 1
-                # value = 0
                 if self.galaxy.current_system is not None:
                     planet = self.galaxy.current_system.planets.get(event.BodyID, None)
                     if planet is not None:
                         planet.mapped_by_player = True
                         self.bodies_mapped.append(planet)
-                        # value = planet.values.mapped
-                # self.mapped_value += value
