@@ -2,12 +2,12 @@ from typing import Sequence
 from db.galaxy import Body, Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
+    DSSSignalEvent,
     FSDJumpEvent,
     FSSSignalEvent,
     JournalEvent,
     ScanEvent,
 )
-from signals.signals import get_possible_bio_signals
 
 
 def is_new_scan(system: System, event: ScanEvent) -> bool:
@@ -71,6 +71,7 @@ class Trip:
                     if planet is not None:
                         planet.mapped_by_player = True
                         self.bodies_mapped.append(planet)
+                continue
 
             if isinstance(event, FSSSignalEvent):
                 biosignals = [
@@ -84,3 +85,11 @@ class Trip:
                         if planet is not None:
                             planet.signal_count = sum(x.Count for x in biosignals)
                             planet.make_possible_signals()
+                continue
+
+            if isinstance(event, DSSSignalEvent):
+                if self.galaxy.current_system is not None:
+                    planet = self.galaxy.current_system.planets.get(event.BodyID, None)
+                    if planet is not None:
+                        planet.update_signals_from_dss(event)
+                continue

@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
-from journal_reader.journal_models import DiscoveryScanEvent, FSDJumpEvent, ScanEvent
+from journal_reader.journal_models import (
+    DSSSignalEvent,
+    DiscoveryScanEvent,
+    FSDJumpEvent,
+    ScanEvent,
+)
 from signals.signals import Flora, get_possible_bio_signals
 from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
 
@@ -72,6 +77,12 @@ class Planet(Body):
         self._mass = event.MassEM
         self.was_discovered = event.WasDiscovered
         self.was_mapped = event.WasMapped
+
+    def update_signals_from_dss(self, event: DSSSignalEvent) -> None:
+        genuses = [x.Genus_Localised for x in event.Genuses]
+        for signal in self.signals:
+            if signal.species.genus in genuses:
+                signal.genus_found = True
 
     def _calc_values(self, mapped_by_player: bool) -> BodyValues:
         k = PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
