@@ -13,12 +13,16 @@ class GUI:
     def __init__(self, log: Log, tk, galaxy: Galaxy) -> None:
         self.log = log
         self.tk_instance = tk
-        self.trip = Trip(galaxy)
+        self.trip = Trip(galaxy, refresh_func=self.refresh_system_tab)
 
         self.notebook = Notebook(self.tk_instance)
         self.route_tab = Frame(self.notebook)
         self.system_tab = Frame(self.notebook)
         self.summary_tab = Frame(self.notebook)
+
+    def refresh_system_tab(self) -> None:
+        self.system_tab = Frame(self.notebook)
+        self._build_system_tab()
 
     def build_trip_snapshot(self) -> None:
         events = self.log.get_until_event(

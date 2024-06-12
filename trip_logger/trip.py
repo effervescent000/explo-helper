@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Callable, Sequence
 from db.galaxy import Body, Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
@@ -22,9 +22,10 @@ def is_new_scan(system: System, event: ScanEvent) -> bool:
 
 
 class Trip:
-    def __init__(self, galaxy: Galaxy) -> None:
+    def __init__(self, galaxy: Galaxy, refresh_func: Callable) -> None:
         self.galaxy = galaxy
 
+        self.refresh = refresh_func
         self.bodies_scanned: list[Body] = []
         self.bodies_mapped: list[Planet] = []
 
@@ -93,3 +94,5 @@ class Trip:
                     if planet is not None:
                         planet.update_signals_from_dss(event)
                 continue
+
+        self.refresh()
