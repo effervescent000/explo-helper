@@ -10,7 +10,7 @@ GAS_GIANT_I = "Sudarsky class I gas giant"
 GAS_GIANT_II = "Sudarsky class II gas giant"
 GAS_GIANT_WITH_WATER = "Gas giant with water based life"
 
-VALUES = {
+PLANET_VALUES = {
     GAS_GIANT_I: {BASE: 4_000},
     GAS_GIANT_II: {BASE: 28_000},
     HMCB: {BASE: 9_654, TERRAFORMABLE: 100_677},

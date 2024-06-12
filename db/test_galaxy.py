@@ -1,5 +1,5 @@
 from shapes import planet_factory
-from values import ROCKY
+from utils.values import ROCKY
 
 
 def test_planet_values_mapped() -> None:

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from journal_reader.journal_models import DiscoveryScanEvent, FSDJumpEvent, ScanEvent
-from values import BASE, MEDIAN_MASS, TERRAFORMABLE, VALUES, VALUES_ELSE
+from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
 
 
 class BodyValues(BaseModel):

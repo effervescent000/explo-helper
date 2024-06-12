@@ -2,7 +2,7 @@ from typing import Literal
 from conftest import PRIMARY_PLANET_ID, PRIMARY_SYSTEM_ADDRESS
 from db.galaxy import Planet
 from journal_reader.journal_models import EventType, JournalEvent, ScanEvent
-from values import ROCKY
+from utils.values import ROCKY
 
 
 def event_factory(*, timestamp: str | None = None, event: EventType) -> JournalEvent:
