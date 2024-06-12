@@ -2,6 +2,8 @@ import json
 from typing import Any, Literal, Optional
 from pydantic import BaseModel
 
+from trip_logger.trip import Trip
+
 EventType = (
     Literal["DiscoveryScan"]
     | Literal["FSDJump"]
@@ -140,6 +142,7 @@ event_mapping = {
 
 class Log(BaseModel):
     events: list[JournalEvent] = []
+    trip: Trip | None = None
 
     def convert_str_to_event(self, data: str | JournalEvent) -> JournalEvent | None:
         if isinstance(data, JournalEvent):
@@ -149,10 +152,12 @@ class Log(BaseModel):
         if event_type is not None:
             return event_type(**parsed)
 
-    def append(self, data: str | JournalEvent) -> None:
+    def append(self, data: str | JournalEvent, trip: Trip | None = None) -> None:
         event = self.convert_str_to_event(data)
         if event is not None:
             self.events.append(event)
+            if trip is not None:
+                trip.add_entries([event])
 
     def find_event(
         self, data: str | JournalEvent, reverse: bool = False

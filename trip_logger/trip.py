@@ -51,6 +51,7 @@ class Trip:
 
     def add_entries(self, events: Sequence[JournalEvent]) -> None:
         for event in events:
+            print(event.event)
             if isinstance(event, FSDJumpEvent):
                 self.galaxy.jump_to_system(event)
                 continue
@@ -85,7 +86,7 @@ class Trip:
                         )
                         if planet is not None:
                             planet.signal_count = sum(x.Count for x in biosignals)
-                            planet.make_possible_signals()
+                            planet.make_possible_bio_signals()
                 continue
 
             if isinstance(event, DSSSignalEvent):

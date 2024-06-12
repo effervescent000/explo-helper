@@ -8,14 +8,20 @@ from watchdog.observers.api import BaseObserver
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
 from journal_reader.journal_models import Log
+from trip_logger.trip import Trip
+
 
 JOURNAL_NAME_REGEX = r"Journal.\d+-\d+-\d+T\d+\.\d+\.log"
 
 
 class JournalEventHandler(FileSystemEventHandler):
-    def __init__(self, log: Log) -> None:
+    def __init__(self, log: Log, trip: Trip | None = None) -> None:
         super().__init__()
         self.log = log
+        self.trip = trip
+
+    def set_trip(self, trip: Trip) -> None:
+        self.trip = trip
 
     def handler(self, event: FileSystemEvent) -> None:
         if re.search(JOURNAL_NAME_REGEX, event.src_path) is not None:
@@ -28,7 +34,7 @@ class JournalEventHandler(FileSystemEventHandler):
                     events_to_add.append(line)
 
             for e in list(reversed(events_to_add)):
-                self.log.append(e)
+                self.log.append(e, self.trip)
 
     def on_created(self, event: FileSystemEvent) -> None:
         self.handler(event)
@@ -43,6 +49,7 @@ class JournalReader:
             str(Path.home()), "Saved Games/Frontier Developments/Elite Dangerous"
         )
         self.log = Log()
+        self.event_handler = JournalEventHandler(log=self.log)
 
     def get_journal_file_names(self) -> list[str]:
         result: list[str] = []
@@ -60,10 +67,12 @@ class JournalReader:
                 for line in file.readlines():
                     self.log.append(line)
 
+    def set_trip(self, trip: Trip) -> None:
+        self.event_handler.set_trip(trip)
+
     def monitor_journals(self) -> BaseObserver:
-        event_handler = JournalEventHandler(log=self.log)
         observer = Observer()
-        observer.schedule(event_handler, self.file_location)
+        observer.schedule(self.event_handler, self.file_location)
         observer.start()
 
         return observer

@@ -1,7 +1,7 @@
 from ttkbootstrap import Frame, Label, Notebook
 
 from db.galaxy import Galaxy
-from journal_reader.journal_models import Log
+from journal_reader.journal_reader import JournalReader
 from trip_logger.trip import Trip
 
 
@@ -10,10 +10,11 @@ def styledLabel(text: str, **kwargs) -> Label:
 
 
 class GUI:
-    def __init__(self, log: Log, tk, galaxy: Galaxy) -> None:
-        self.log = log
+    def __init__(self, reader: JournalReader, tk, galaxy: Galaxy) -> None:
+        self.log = reader.log
         self.tk_instance = tk
         self.trip = Trip(galaxy, refresh_func=self.refresh_system_tab)
+        reader.set_trip(self.trip)
 
         self.notebook = Notebook(self.tk_instance)
         self.route_tab = Frame(self.notebook)
@@ -21,6 +22,7 @@ class GUI:
         self.summary_tab = Frame(self.notebook)
 
     def refresh_system_tab(self) -> None:
+        self.system_tab.destroy()
         self.system_tab = Frame(self.notebook)
         self._build_system_tab()
 
@@ -74,7 +76,7 @@ class GUI:
 
     def _build_system_tab(self) -> None:
         system = self.trip.galaxy.current_system
-        headers = ["Name", "Type", "Mapped Value"]
+        headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
         for i in range(len(headers)):
             styledLabel(text=headers[i], master=self.system_tab).grid(row=0, column=i)
         if system is not None:
@@ -83,15 +85,16 @@ class GUI:
                     body.name,
                     body.planet_class,
                     f"{body.values_estimate.total_value:,}",
+                    f"{body.signal_count or ''}",
                 ]
                 signals_frame = Frame(self.system_tab)
                 signals_frame.grid(row=i * 2 + 2, column=1, columnspan=2)
-                child_content = styledLabel(
-                    text="Hello I am a child label", master=signals_frame
-                )
                 for j, label in enumerate(labels):
                     styledLabel(text=label, master=self.system_tab).grid(
                         row=i * 2 + 1, column=j
                     )
-                if i % 3 == 0:
-                    child_content.pack()
+                for j, signal in enumerate(body.signals):
+                    styledLabel(
+                        text=f"{signal.species.genus} {signal.species.species}",
+                        master=signals_frame,
+                    ).grid(row=j, col=0)

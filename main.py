@@ -11,7 +11,7 @@ reader = JournalReader()
 reader.compile_journals()
 observer = reader.monitor_journals()
 
-gui = GUI(reader.log, root, galaxy)
+gui = GUI(reader, root, galaxy)
 gui.build_trip_snapshot()
 gui.setup_tabs()
 gui.build_tab_contents()
