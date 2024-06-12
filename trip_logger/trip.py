@@ -51,7 +51,6 @@ class Trip:
 
     def add_entries(self, events: Sequence[JournalEvent]) -> None:
         for event in events:
-            print(event.event)
             if isinstance(event, FSDJumpEvent):
                 self.galaxy.jump_to_system(event)
                 continue

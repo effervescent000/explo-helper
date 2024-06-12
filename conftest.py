@@ -20,4 +20,4 @@ def testing_galaxy() -> Galaxy:
 
 @pytest.fixture
 def testing_trip(testing_galaxy: Galaxy) -> Trip:
-    return Trip(galaxy=testing_galaxy)
+    return Trip(galaxy=testing_galaxy, refresh_func=lambda *args: None)

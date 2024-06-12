@@ -16,3 +16,10 @@ def test_planet_values_unmapped() -> None:
     )
     assert rocky_planet.values_actual.base == 500
     assert rocky_planet.values_actual.bonuses == 800
+
+
+def test_make_bio_signals() -> None:
+    planet = planet_factory(atmosphere="Ammonia", gravity=0.26)
+    planet.make_possible_bio_signals()
+    filtered = [x for x in planet.signals if x.species.genus == "Concha"]
+    assert len(filtered) == 1

@@ -1,17 +1,77 @@
+import json
 from pathlib import Path
 import re
 import os
 
 
+from pydantic import BaseModel
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
-from journal_reader.journal_models import Log
+from journal_reader.journal_models import EventType, JournalEvent, event_mapping
 from trip_logger.trip import Trip
 
 
 JOURNAL_NAME_REGEX = r"Journal.\d+-\d+-\d+T\d+\.\d+\.log"
+
+
+class Log(BaseModel):
+    events: list[JournalEvent] = []
+
+    def convert_str_to_event(self, data: str | JournalEvent) -> JournalEvent | None:
+        if isinstance(data, JournalEvent):
+            return data
+        parsed = json.loads(data)
+        event_type = event_mapping.get(parsed["event"], None)
+        if event_type is not None:
+            return event_type(**parsed)
+
+    def append(self, data: str | JournalEvent, trip: Trip | None = None) -> None:
+        event = self.convert_str_to_event(data)
+        if event is not None:
+            self.events.append(event)
+            if trip is not None:
+                trip.add_entries([event])
+
+    def find_event(
+        self, data: str | JournalEvent, reverse: bool = False
+    ) -> JournalEvent | None:
+        """
+        Pass in either a raw journal str or processed event, receive the first matching event
+        (from oldest to newest by default).
+        """
+        event = self.convert_str_to_event(data) if isinstance(data, str) else data
+        if event is None:
+            return
+
+        dataset = [*self.events]
+        if reverse:
+            dataset = list(reversed(dataset))
+        for logged_event in dataset:
+            if (
+                event.timestamp == logged_event.timestamp
+                and event.event == logged_event.event
+            ):
+                return logged_event
+
+    def get_until_event(
+        self, event_types: list[EventType], reverse: bool = False
+    ) -> list[JournalEvent]:
+        """Get all events (from start by default) until event of target type is found."""
+        matching_events: list[JournalEvent] = []
+        dataset = [*self.events]
+        if reverse:
+            dataset = list(reversed(dataset))
+
+        for event in dataset:
+            if event.event in event_types:
+                break
+            matching_events.append(event)
+
+        if reverse:
+            matching_events = list(reversed(matching_events))
+        return matching_events
 
 
 class JournalEventHandler(FileSystemEventHandler):
