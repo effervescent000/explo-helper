@@ -7,6 +7,7 @@ from journal_reader.journal_models import (
     JournalEvent,
     ScanEvent,
 )
+from signals.signals import get_possible_bio_signals
 
 
 def is_new_scan(system: System, event: ScanEvent) -> bool:
@@ -82,3 +83,4 @@ class Trip:
                         )
                         if planet is not None:
                             planet.signal_count = sum(x.Count for x in biosignals)
+                            planet.make_possible_signals()

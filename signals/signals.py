@@ -1,6 +1,6 @@
 from typing import Literal
 from pydantic import BaseModel
-from db.galaxy import BioSignal, Planet
+from db.galaxy import Planet
 
 STANDARD_MAX_GRAVITY = 0.27
 

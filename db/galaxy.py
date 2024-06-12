@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from journal_reader.journal_models import DiscoveryScanEvent, FSDJumpEvent, ScanEvent
+from signals.signals import Flora, get_possible_bio_signals
 from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
 
 
@@ -14,11 +15,6 @@ class BodyValues(BaseModel):
         if self.mapped != 0:
             return round(self.mapped + self.bonuses)
         return round(self.base + self.bonuses)
-
-
-class BioSignal(BaseModel):
-    genus: str
-    species: str
 
 
 class Body(BaseModel):
@@ -41,6 +37,12 @@ class Star(Body):
     star_class: str
 
 
+class BioSignal(BaseModel):
+    species: Flora
+    genus_found: bool = False
+    species_found: bool = False
+
+
 class Planet(Body):
     planet_class: str | None = None
     terraformable: bool = False
@@ -56,8 +58,11 @@ class Planet(Body):
     detailed_scan_by_player: bool = False
     mapped_by_player: bool = False
 
-    _possible_signals: list[BioSignal] = []
-    _found_signals: list[BioSignal] = []
+    signals: list[BioSignal] = []
+
+    def make_possible_signals(self) -> None:
+        species_list = get_possible_bio_signals(self)
+        self.signals = [BioSignal(species=x) for x in species_list]
 
     def update_from_fss(self, event: ScanEvent) -> None:
         self.planet_class = event.PlanetClass
