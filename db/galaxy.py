@@ -125,7 +125,7 @@ class Planet(Body):
             mapped_value_baseline = fss_value * 3.3333333333
             values.mapped = mapped_value_baseline
 
-            mapping_first_bonus_multiplier = 0
+            mapping_first_bonus_multiplier = 3.3333333333
             if self.was_discovered is False:
                 mapping_first_bonus_multiplier = 3.699622554
             elif self.was_mapped is False:

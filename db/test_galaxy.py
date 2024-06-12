@@ -18,6 +18,18 @@ def test_planet_values_unmapped() -> None:
     assert rocky_planet.values_actual.bonuses == 800
 
 
+def test_planet_values_already_discovered_mapped() -> None:
+    rocky_planet = planet_factory(
+        planet_class=ROCKY,
+        terraformable=False,
+        was_discovered=True,
+        was_mapped=True,
+        mapped_by_player=True,
+    )
+    assert round(rocky_planet.values_actual.mapped) == 1181
+    assert rocky_planet.values_actual.bonuses == 0
+
+
 def test_make_bio_signals() -> None:
     planet = planet_factory(atmosphere="Ammonia", gravity=0.26)
     planet.make_possible_bio_signals()
