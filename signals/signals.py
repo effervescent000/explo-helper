@@ -1,6 +1,5 @@
 from typing import Literal
 from pydantic import BaseModel
-from db.galaxy import Planet
 
 STANDARD_MAX_GRAVITY = 0.27
 
@@ -45,33 +44,3 @@ species = [
         species="labiata",
     ),
 ]
-
-
-def get_possible_bio_signals(planet: Planet) -> list[Flora]:
-    matches = []
-
-    for sp in species:
-        if (
-            sp.atmosphere_requirement is None
-            or len(sp.atmosphere_requirement) == 0
-            or planet.atmosphere not in sp.atmosphere_requirement
-        ):
-            continue
-        if sp.max_gravity is not None and planet.gravity > sp.max_gravity:
-            continue
-        if (
-            sp.max_temperature_k is not None
-            and planet.temperature is not None
-            and planet.temperature > sp.max_temperature_k
-        ):
-            continue
-        if (
-            sp.min_temperature_k is not None
-            and planet.temperature is not None
-            and planet.temperature < sp.min_temperature_k
-        ):
-            continue
-
-        matches.append(sp)
-
-    return matches

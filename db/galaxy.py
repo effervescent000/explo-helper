@@ -6,7 +6,7 @@ from journal_reader.journal_models import (
     FSDJumpEvent,
     ScanEvent,
 )
-from signals.signals import Flora, get_possible_bio_signals
+from signals.signals import Flora, species
 from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
 
 
@@ -65,8 +65,32 @@ class Planet(Body):
 
     signals: list[BioSignal] = []
 
-    def make_possible_signals(self) -> None:
-        species_list = get_possible_bio_signals(self)
+    def make_possible_bio_signals(self) -> None:
+        species_list = []
+
+        for sp in species:
+            if (
+                sp.atmosphere_requirement is None
+                or len(sp.atmosphere_requirement) == 0
+                or self.atmosphere not in sp.atmosphere_requirement
+            ):
+                continue
+            if sp.max_gravity is not None and self.gravity > sp.max_gravity:
+                continue
+            if (
+                sp.max_temperature_k is not None
+                and self.temperature is not None
+                and self.temperature > sp.max_temperature_k
+            ):
+                continue
+            if (
+                sp.min_temperature_k is not None
+                and self.temperature is not None
+                and self.temperature < sp.min_temperature_k
+            ):
+                continue
+
+            species_list.append(sp)
         self.signals = [BioSignal(species=x) for x in species_list]
 
     def update_from_fss(self, event: ScanEvent) -> None:
