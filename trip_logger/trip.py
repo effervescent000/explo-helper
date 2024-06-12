@@ -3,6 +3,7 @@ from db.galaxy import Body, Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
     FSDJumpEvent,
+    FSSSignalEvent,
     JournalEvent,
     ScanEvent,
 )
@@ -69,3 +70,15 @@ class Trip:
                     if planet is not None:
                         planet.mapped_by_player = True
                         self.bodies_mapped.append(planet)
+
+            if isinstance(event, FSSSignalEvent):
+                biosignals = [
+                    x for x in event.Signals if x.Type_Localised == "Biological"
+                ]
+                if len(biosignals) > 0:
+                    if self.galaxy.current_system is not None:
+                        planet = self.galaxy.current_system.planets.get(
+                            event.BodyID, None
+                        )
+                        if planet is not None:
+                            planet.signal_count = sum(x.Count for x in biosignals)

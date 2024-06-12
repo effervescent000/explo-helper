@@ -16,6 +16,11 @@ class BodyValues(BaseModel):
         return round(self.base + self.bonuses)
 
 
+class BioSignal(BaseModel):
+    genus: str
+    species: str
+
+
 class Body(BaseModel):
     SystemAddress: int
     BodyID: int
@@ -39,23 +44,36 @@ class Star(Body):
 class Planet(Body):
     planet_class: str | None = None
     terraformable: bool = False
-    detailed_scan_by_player: bool = False
-    mapped_by_player: bool = False
     was_discovered: bool = False
     was_mapped: bool = False
+    signal_count: int = 0
+    atmosphere: str | None = None
+    temperature: float | None = None
 
+    _gravity: float | None = None
     _mass: float | None = None
+
+    detailed_scan_by_player: bool = False
+    mapped_by_player: bool = False
+
+    _possible_signals: list[BioSignal] = []
+    _found_signals: list[BioSignal] = []
 
     def update_from_fss(self, event: ScanEvent) -> None:
         self.planet_class = event.PlanetClass
         self.terraformable = bool(event.TerraformState)
         self.detailed_scan_by_player = True
+        self._gravity = event.SurfaceGravity
+        self._mass = event.MassEM
         self.was_discovered = event.WasDiscovered
+        self.was_mapped = event.WasMapped
 
     def _calc_values(self, mapped_by_player: bool) -> BodyValues:
-        k = VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
+        k = PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
         if self.terraformable:
-            k += VALUES.get(self.planet_class or "", VALUES_ELSE).get(TERRAFORMABLE, 0)
+            k += PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(
+                TERRAFORMABLE, 0
+            )
 
         values = BodyValues(base=0, mapped=0, bonuses=0)
 
@@ -86,6 +104,10 @@ class Planet(Body):
         values.bonuses += first_discovery_bonus_value
 
         return values
+
+    @property
+    def gravity(self) -> float:
+        return 0 if self._gravity is None else self._gravity / 10
 
     @property
     def values_actual(self) -> BodyValues:
@@ -130,6 +152,7 @@ class System(BaseModel):
                 system_name=event.StarSystem,
                 was_discovered=event.WasDiscovered,
                 was_mapped=event.WasMapped,
+                atmosphere=event.AtmosphereType,
             )
         elif event.ScanType == "Detailed":
             self.planets[body_id].update_from_fss(event)

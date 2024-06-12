@@ -98,6 +98,7 @@ class ScanEvent(JournalEvent):
     SurfaceTemperature: Optional[float] = None
     Landable: Optional[bool] = None
     SemiMajorAxis: Optional[float] = None
+    MassEM: float | None = None
     WasDiscovered: bool
     WasMapped: bool
 

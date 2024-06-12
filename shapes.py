@@ -50,6 +50,9 @@ def planet_factory(
     was_discovered: bool = False,
     was_mapped: bool = False,
     mapped_by_player: bool = False,
+    atmosphere: str | None = None,
+    gravity: float | None = None,
+    mass: float | None = None,
 ) -> Planet:
     return Planet(
         system_name=StarSystem or "DONT CARE",
@@ -62,4 +65,7 @@ def planet_factory(
         was_discovered=was_discovered,
         was_mapped=was_mapped,
         mapped_by_player=mapped_by_player,
+        atmosphere=atmosphere or "None",
+        _gravity=(gravity or 0) * 10,
+        _mass=mass,
     )
