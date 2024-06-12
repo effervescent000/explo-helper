@@ -21,6 +21,8 @@ def scan_event_factory(
     BodyID: int | None = None,
     PlanetClass: str | None = None,
     TerraformState: str | None = None,
+    MassEM: float | None = None,
+    SurfaceGravity: float | None = None,
     WasDiscovered: bool = False,
     WasMapped: bool = False,
 ) -> ScanEvent:
@@ -33,6 +35,8 @@ def scan_event_factory(
         BodyID=BodyID or PRIMARY_PLANET_ID,
         PlanetClass=PlanetClass or ROCKY,
         TerraformState=TerraformState or "",
+        MassEM=MassEM,
+        SurfaceGravity=SurfaceGravity,
         WasDiscovered=WasDiscovered or False,
         WasMapped=WasMapped or False,
     )

@@ -92,12 +92,12 @@ class ScanEvent(JournalEvent):
     BodyID: int
     PlanetClass: str | None = None
     TerraformState: str | None = None
-    DistanceFromArrivalLS: Optional[float] = None
+    DistanceFromArrivalLS: float | None = None
     AtmosphereType: Optional[str] = None
-    SurfaceGravity: Optional[float] = None
-    SurfaceTemperature: Optional[float] = None
+    SurfaceGravity: float | None = None
+    SurfaceTemperature: float | None = None
     Landable: Optional[bool] = None
-    SemiMajorAxis: Optional[float] = None
+    SemiMajorAxis: float | None = None
     MassEM: float | None = None
     WasDiscovered: bool
     WasMapped: bool

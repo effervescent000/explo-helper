@@ -29,3 +29,12 @@ def test_trip_add_entries_autoscan_then_fss(testing_trip: Trip) -> None:
 
     assert testing_trip.bodies_scanned_value == 500
     assert testing_trip.bodies_scanned_count == 1
+
+
+def test_fss_adds_all_params(testing_trip: Trip) -> None:
+    event = scan_event_factory(
+        BodyID=PRIMARY_PLANET_ID, MassEM=0.25, BodyName="TESTING"
+    )
+    testing_trip.add_entries([event])
+
+    assert testing_trip.bodies_scanned[0].mass == 0.25

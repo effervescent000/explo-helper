@@ -1,5 +1,5 @@
 from typing import Callable, Sequence
-from db.galaxy import Body, Galaxy, Planet, System
+from db.galaxy import Galaxy, Planet, System
 from journal_reader.journal_models import (
     DSSEvent,
     DSSSignalEvent,
@@ -32,7 +32,7 @@ class Trip:
 
         self.refresh = refresh_func
         self.add_body = add_body
-        self.bodies_scanned: list[Body] = []
+        self.bodies_scanned: list[Planet] = []
         self.bodies_mapped: list[Planet] = []
 
     @property
@@ -71,6 +71,8 @@ class Trip:
                     if new_scan is True:
                         self.bodies_scanned.append(planet)
                         self.add_body(planet)
+                    else:
+                        planet.update_from_fss(event)
                 continue
 
             if isinstance(event, DSSEvent):

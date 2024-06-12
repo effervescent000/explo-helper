@@ -57,8 +57,8 @@ class Planet(Body):
     atmosphere: str | None = None
     temperature: float | None = None
 
-    _gravity: float | None = None
-    _mass: float | None = None
+    surface_gravity: float | None = None
+    mass_em: float | None = None
 
     detailed_scan_by_player: bool = False
     mapped_by_player: bool = False
@@ -97,8 +97,8 @@ class Planet(Body):
         self.planet_class = event.PlanetClass
         self.terraformable = bool(event.TerraformState)
         self.detailed_scan_by_player = True
-        self._gravity = event.SurfaceGravity
-        self._mass = event.MassEM
+        self.surface_gravity = event.SurfaceGravity
+        self.mass_em = event.MassEM
         self.was_discovered = event.WasDiscovered
         self.was_mapped = event.WasMapped
 
@@ -147,7 +147,7 @@ class Planet(Body):
 
     @property
     def gravity(self) -> float:
-        return 0 if self._gravity is None else self._gravity / 10
+        return 0 if self.surface_gravity is None else self.surface_gravity / 10
 
     @property
     def values_actual(self) -> BodyValues:
@@ -159,8 +159,8 @@ class Planet(Body):
 
     @property
     def mass(self) -> float:
-        if self._mass is not None:
-            return self._mass
+        if self.mass_em is not None:
+            return self.mass_em
         return MEDIAN_MASS.get(self.planet_class or "", {}).get(
             TERRAFORMABLE if self.terraformable else BASE, 0.4
         )
@@ -190,6 +190,8 @@ class System(BaseModel):
                 terraformable=bool(event.TerraformState),
                 detailed_scan_by_player=event.ScanType == "Detailed",
                 system_name=event.StarSystem,
+                mass_em=event.MassEM,
+                surface_gravity=event.SurfaceGravity,
                 was_discovered=event.WasDiscovered,
                 was_mapped=event.WasMapped,
                 atmosphere=event.AtmosphereType,
