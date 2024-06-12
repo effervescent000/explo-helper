@@ -14,7 +14,9 @@ class GUI:
     def __init__(self, reader: JournalReader, tk, galaxy: Galaxy) -> None:
         self.log = reader.log
         self.tk_instance = tk
-        self.trip = Trip(galaxy, refresh_func=self.refresh_system_tab)
+        self.trip = Trip(
+            galaxy, refresh_func=self.refresh_system_tab, add_body=self.add_to_system
+        )
         reader.set_trip(self.trip)
 
         self.notebook = Notebook(self.tk_instance)
@@ -24,6 +26,9 @@ class GUI:
 
     def refresh_system_tab(self) -> None:
         self.system_tab.refresh()
+
+    def add_to_system(self, body: Planet) -> None:
+        self.system_tab.append_body(body)
 
     def build_trip_snapshot(self) -> None:
         events = self.log.get_until_event(
@@ -71,15 +76,16 @@ class GUI:
         self.notebook.pack()
 
     def build_tab_contents(self) -> None:
-        self.system_tab.build_contents()
+        self.system_tab.build_headers()
 
 
 class BodyLabel(Label):
     def __init__(
-        self, master: Frame, update_func: Callable[[Planet], str], body: Planet
+        self, master: Frame, update_func: Callable[[Planet], str], body: Planet, id: str
     ) -> None:
         self.update_func = update_func
         self.body = body
+        self.id = id
         super().__init__(master, text=self.update_func(self.body))
 
     def do_update(self) -> None:
@@ -93,47 +99,45 @@ class SystemTab:
         self.frame = Frame(self.parent)
         self.frame.pack()
         self.children: list[BodyLabel] = []
+        self.y = 1
 
     def refresh(self) -> None:
         for child in self.children:
             child.do_update()
 
-    def build_contents(self) -> None:
+    def append_body(self, body: Planet) -> None:
+        id = str(body.BodyID)
+        labels = [
+            BodyLabel(self.frame, lambda x: x.name, body, id),
+            BodyLabel(
+                self.frame,
+                lambda x: x.planet_class if x.planet_class is not None else "",
+                body,
+                id,
+            ),
+            BodyLabel(
+                self.frame, lambda x: f"{x.values_estimate.total_value:,}", body, id
+            ),
+            BodyLabel(self.frame, lambda x: f"{x.signal_count or ''}", body, id),
+        ]
+        self.children.extend(labels)
+        signals_frame = Frame(self.frame)
+        signals_frame.grid(row=self.y * 2 + 1, column=1, columnspan=2)
+        for j, label in enumerate(labels):
+            label.grid(row=self.y * 2, column=j)
+
+        for j in range(len(body.signals)):
+            signal_label = BodyLabel(
+                signals_frame,
+                lambda x: f"{x.signals[j].species.genus} {x.signals[j].species.species}",
+                body,
+                f"{id}-signal-{j}",
+            )
+            signal_label.grid(row=j, column=0)
+            self.children.append(signal_label)
+        self.y += 1
+
+    def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
-        system = self.galaxy.current_system
         for i in range(len(headers)):
             styledLabel(text=headers[i], master=self.frame).grid(row=0, column=i)
-            if system is not None:
-                for i, body in enumerate(system.planets.values()):
-                    labels = [
-                        BodyLabel(self.frame, lambda x: x.name, body),
-                        BodyLabel(
-                            self.frame,
-                            lambda x: x.planet_class
-                            if x.planet_class is not None
-                            else "",
-                            body,
-                        ),
-                        BodyLabel(
-                            self.frame,
-                            lambda x: f"{x.values_estimate.total_value:,}",
-                            body,
-                        ),
-                        BodyLabel(
-                            self.frame, lambda x: f"{x.signal_count or ''}", body
-                        ),
-                    ]
-                    self.children.extend(labels)
-                    signals_frame = Frame(self.frame)
-                    signals_frame.grid(row=i * 2 + 2, column=1, columnspan=2)
-                    for j, label in enumerate(labels):
-                        label.grid(row=i * 2 + 1, column=j)
-
-                    for j in range(len(body.signals)):
-                        signal_label = BodyLabel(
-                            signals_frame,
-                            lambda x: f"{x.signals[j].species.genus} {x.signals[j].species.species}",
-                            body,
-                        )
-                        signal_label.grid(row=j, column=0)
-                        self.children.append(signal_label)

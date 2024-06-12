@@ -22,10 +22,16 @@ def is_new_scan(system: System, event: ScanEvent) -> bool:
 
 
 class Trip:
-    def __init__(self, galaxy: Galaxy, refresh_func: Callable) -> None:
+    def __init__(
+        self,
+        galaxy: Galaxy,
+        refresh_func: Callable[[], None],
+        add_body: Callable[[Planet], None],
+    ) -> None:
         self.galaxy = galaxy
 
         self.refresh = refresh_func
+        self.add_body = add_body
         self.bodies_scanned: list[Body] = []
         self.bodies_mapped: list[Planet] = []
 
@@ -64,6 +70,7 @@ class Trip:
                     planet = self.galaxy.current_system.add_planet_from_scan(event)
                     if new_scan is True:
                         self.bodies_scanned.append(planet)
+                        self.add_body(planet)
                 continue
 
             if isinstance(event, DSSEvent):
