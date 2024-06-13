@@ -1,7 +1,13 @@
 from typing import Literal
 from conftest import PRIMARY_PLANET_ID, PRIMARY_SYSTEM_ADDRESS
 from db.galaxy import Planet
-from journal_reader.journal_models import EventType, JournalEvent, ScanEvent
+from journal_reader.journal_models import (
+    EventType,
+    FSSSignalEvent,
+    GenericSignal,
+    JournalEvent,
+    ScanEvent,
+)
 from utils.values import ROCKY
 
 
@@ -42,6 +48,33 @@ def scan_event_factory(
     )
 
 
+def signal_count_factory(
+    *,
+    Type: str | None = None,
+    Type_Localised: str | None = None,
+    Count: int | None = None,
+) -> GenericSignal:
+    return GenericSignal(
+        Type=Type or "$SAA_SignalType_Biological;",
+        Type_Localised=Type_Localised or "Biological",
+        Count=Count if Count is not None else 0,
+    )
+
+
+def fss_signal_event_factory(
+    *,
+    BodyID: int | None = None,
+    SystemAddress: int | None = None,
+    Signals: list[GenericSignal],
+) -> FSSSignalEvent:
+    return FSSSignalEvent(
+        **event_factory(event="FSSBodySignals").model_dump(),
+        BodyID=BodyID or PRIMARY_PLANET_ID,
+        SystemAddress=SystemAddress or PRIMARY_SYSTEM_ADDRESS,
+        Signals=Signals,
+    )
+
+
 def planet_factory(
     *,
     StarSystem: str | None = None,
@@ -70,6 +103,6 @@ def planet_factory(
         was_mapped=was_mapped,
         mapped_by_player=mapped_by_player,
         atmosphere=atmosphere or "None",
-        _gravity=(gravity or 0) * 10,
-        _mass=mass,
+        surface_gravity=(gravity or 0) * 10,
+        mass_em=mass,
     )

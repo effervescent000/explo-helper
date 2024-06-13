@@ -26,12 +26,14 @@ class Trip:
         self,
         galaxy: Galaxy,
         refresh_func: Callable[[], None],
-        add_body: Callable[[Planet], None],
+        add_body_to_ui: Callable[[Planet], None],
+        clear_system: Callable[[], None],
     ) -> None:
         self.galaxy = galaxy
 
         self.refresh = refresh_func
-        self.add_body = add_body
+        self.add_body_to_ui = add_body_to_ui
+        self.clear_system = clear_system
         self.bodies_scanned: list[Planet] = []
         self.bodies_mapped: list[Planet] = []
 
@@ -59,7 +61,9 @@ class Trip:
         for event in events:
             if isinstance(event, FSDJumpEvent):
                 self.galaxy.jump_to_system(event)
+                self.clear_system()
                 continue
+
             if (
                 isinstance(event, ScanEvent)
                 and event.ScanType == "Detailed"
@@ -70,7 +74,7 @@ class Trip:
                     planet = self.galaxy.current_system.add_planet_from_scan(event)
                     if new_scan is True:
                         self.bodies_scanned.append(planet)
-                        self.add_body(planet)
+                        self.add_body_to_ui(planet)
                     else:
                         planet.update_from_fss(event)
                 continue
