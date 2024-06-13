@@ -4,6 +4,7 @@ from journal_reader.journal_models import (
     DSSSignalEvent,
     DiscoveryScanEvent,
     FSDJumpEvent,
+    FSSSignalEvent,
     ScanEvent,
 )
 from signals.signals import Flora, species
@@ -25,9 +26,9 @@ class BodyValues(BaseModel):
 class Body(BaseModel):
     SystemAddress: int
     BodyID: int
-    BodyName: str
+    BodyName: str = ""
 
-    system_name: str
+    system_name: str = ""
 
     @property
     def name(self) -> str:
@@ -198,6 +199,20 @@ class System(BaseModel):
             )
         elif event.ScanType == "Detailed":
             self.planets[body_id].update_from_fss(event)
+        return self.planets[body_id]
+
+    def add_planet_from_signals(self, event: FSSSignalEvent) -> Planet:
+        body_id = event.BodyID
+        biosignals = [x for x in event.Signals if x.Type_Localised == "Biological"]
+        if body_id not in self.planets:
+            self.planets[body_id] = Planet(
+                SystemAddress=self.system_address,
+                BodyID=body_id,
+                signal_count=sum(x.Count for x in biosignals),
+            )
+        else:
+            self.planets[body_id].signal_count = sum(x.Count for x in biosignals)
+        self.planets[body_id].make_possible_bio_signals()
         return self.planets[body_id]
 
 
