@@ -95,6 +95,8 @@ class Planet(Body):
         self.signals = [BioSignal(species=x) for x in species_list]
 
     def update_from_fss(self, event: ScanEvent) -> None:
+        self.BodyName = event.BodyName
+        self.system_name = event.StarSystem
         self.planet_class = event.PlanetClass
         self.terraformable = bool(event.TerraformState)
         self.detailed_scan_by_player = True
