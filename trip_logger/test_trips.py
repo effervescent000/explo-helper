@@ -47,13 +47,23 @@ def test_add_biosignals(testing_trip: Trip) -> None:
         fss_signal_event_factory(Signals=[signal_count_factory(Count=2)]),
         scan_event_factory(BodyID=PRIMARY_PLANET_ID),
     ]
-
     testing_trip.add_entries(events)
 
     current_system = cast(System, testing_trip.galaxy.current_system)
-
     assert len(current_system.planets) == 1
 
     planet = current_system.planets[PRIMARY_PLANET_ID]
-
     assert planet.signal_count == 2
+
+
+def test_make_bio_signals_from_start(testing_trip: Trip) -> None:
+    """Test making bio signals without a premade planet."""
+    events = [
+        fss_signal_event_factory(Signals=[signal_count_factory(Count=2)]),
+        scan_event_factory(BodyID=PRIMARY_PLANET_ID, AtmosphereType="Ammonia"),
+    ]
+    testing_trip.add_entries(events)
+
+    current_system = cast(System, testing_trip.galaxy.current_system)
+    planet = current_system.planets[PRIMARY_PLANET_ID]
+    assert len(planet.signals) > 0
