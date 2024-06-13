@@ -178,8 +178,10 @@ class BodyRow:
     def place_children(self) -> None:
         for x, child in enumerate(self.children):
             child.label.grid(row=self.y * 2, column=x)
-        for signal in self.signals:
-            signal.place_children()
+        if len(self.signals) > 0:
+            self.signal_frame.grid(row=self.y * 2 + 1, column=1, columnspan=2)
+            for signal in self.signals:
+                signal.place_children()
 
     def do_update(self) -> None:
         for child in self.children:

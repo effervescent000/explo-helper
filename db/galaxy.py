@@ -102,6 +102,7 @@ class Planet(Body):
         self.detailed_scan_by_player = True
         self.surface_gravity = event.SurfaceGravity
         self.mass_em = event.MassEM
+        self.atmosphere = event.AtmosphereType
         self.was_discovered = event.WasDiscovered
         self.was_mapped = event.WasMapped
 
@@ -201,6 +202,8 @@ class System(BaseModel):
             )
         elif event.ScanType == "Detailed":
             self.planets[body_id].update_from_fss(event)
+        if self.planets[body_id].signal_count > 0:
+            self.planets[body_id].make_possible_bio_signals()
         return self.planets[body_id]
 
     def add_planet_from_signals(self, event: FSSSignalEvent) -> Planet:
@@ -214,7 +217,6 @@ class System(BaseModel):
             )
         else:
             self.planets[body_id].signal_count = sum(x.Count for x in biosignals)
-        self.planets[body_id].make_possible_bio_signals()
         return self.planets[body_id]
 
 
