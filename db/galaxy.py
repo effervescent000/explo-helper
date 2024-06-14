@@ -27,10 +27,10 @@ def get_bio_signal_values_from_list(
 
 
 class BodyBioValues(BaseModel):
-    min: float
-    max: float
-    actual: float = 0
-    bonuses: float
+    min: int
+    max: int
+    actual: int = 0
+    bonuses: int
 
 
 class BodyCartographicValues(BaseModel):
@@ -158,6 +158,15 @@ class Planet(Body):
         )
 
         return values
+
+    @property
+    def bio_signal_value_label(self) -> str:
+        if self.signal_count < 1:
+            return ""
+        values = self.bio_signal_values
+        if values.min != values.max:
+            return f"{values.min:,} - {values.max:,}"
+        return f"{values.min:,}"
 
     def _calc_values(self, mapped_by_player: bool) -> BodyCartographicValues:
         k = PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
