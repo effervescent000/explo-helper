@@ -1,13 +1,15 @@
 from typing import Callable
-from ttkbootstrap import Frame, Label, Notebook
+
+import ttkbootstrap as tb
+
 
 from db.galaxy import BioSignal, Galaxy, Planet
 from journal_reader.journal_reader import JournalReader
 from trip_logger.trip import Trip
 
 
-def styledLabel(text: str, **kwargs) -> Label:
-    return Label(text=text, **kwargs)
+def styledLabel(text: str, **kwargs) -> tb.Label:
+    return tb.Label(text=text, **kwargs)
 
 
 class GUI:
@@ -22,10 +24,10 @@ class GUI:
         )
         reader.set_trip(self.trip)
 
-        self.notebook = Notebook(self.tk_instance)
-        self.route_tab = Frame(self.notebook)
-        self.system_tab = SystemTab(Frame(self.notebook), self.trip.galaxy)
-        self.summary_tab = Frame(self.notebook)
+        self.notebook = tb.Notebook(self.tk_instance)
+        self.route_tab = tb.Frame(self.notebook)
+        self.system_tab = SystemTab(tb.Frame(self.notebook), self.trip.galaxy)
+        self.summary_tab = tb.Frame(self.notebook)
 
     def clear_system(self) -> None:
         self.system_tab.clear()
@@ -42,7 +44,7 @@ class GUI:
         )
         self.trip.add_entries(events)
 
-        summary_frame = Frame(master=self.tk_instance)
+        summary_frame = tb.Frame(master=self.tk_instance)
         summary_frame.pack()
 
         planets_scanned_label = styledLabel(
@@ -88,7 +90,7 @@ class GUI:
 class SignalLabel:
     def __init__(
         self,
-        signal_frame: Frame,
+        signal_frame: tb.Frame,
         *,
         signal: BioSignal,
         update_func: Callable[[BioSignal], str],
@@ -97,11 +99,11 @@ class SignalLabel:
         self.update_func = update_func
         self.signal = signal
         self.dynamic = dynamic
-        self.label = Label(signal_frame, text=update_func(self.signal))
+        self.label = tb.Label(signal_frame, text=update_func(self.signal))
 
 
 class SignalRow:
-    def __init__(self, signal_frame: Frame, *, signal: BioSignal) -> None:
+    def __init__(self, signal_frame: tb.Frame, *, signal: BioSignal) -> None:
         self.signal = signal
         self.y = 0
         self.children = [
@@ -127,10 +129,20 @@ class SignalRow:
         self.children = []
 
 
+class HeaderLabel:
+    def __init__(self, master: tb.Frame, text: str) -> None:
+        self.container = tb.Frame(master, style="info")
+        self.label = tb.Label(self.container, text=text, style="inverse-info")
+
+    def place_self(self, x: int) -> None:
+        self.container.grid(row=0, column=x, sticky="ew")
+        self.label.pack()
+
+
 class BodyLabel:
     def __init__(
         self,
-        master: Frame,
+        master: tb.Frame,
         *,
         update_func: Callable[[Planet], str],
         body: Planet,
@@ -138,7 +150,7 @@ class BodyLabel:
     ) -> None:
         self.update_func = update_func
         self.body = body
-        self.label = Label(master, text=self.update_func(self.body))
+        self.label = tb.Label(master, text=self.update_func(self.body))
         self.dynamic = dynamic
 
     def do_update(self) -> None:
@@ -146,10 +158,10 @@ class BodyLabel:
 
 
 class BodyRow:
-    def __init__(self, parent_frame: Frame, *, y: int, body: Planet) -> None:
+    def __init__(self, parent_frame: tb.Frame, *, y: int, body: Planet) -> None:
         self.y = y
         self.body = body
-        self.signal_frame = Frame(parent_frame)
+        self.signal_frame = tb.Frame(parent_frame)
         self.signals: list[SignalRow] = [
             SignalRow(self.signal_frame, signal=signal) for signal in self.body.signals
         ]
@@ -186,7 +198,7 @@ class BodyRow:
 
     def place_children(self) -> None:
         for x, child in enumerate(self.children):
-            child.label.grid(row=self.y * 2, column=x)
+            child.label.grid(row=self.y * 2, column=x, sticky="ew")
         if len(self.signals) > 0:
             self.signal_frame.grid(row=self.y * 2 + 1, column=1, columnspan=2)
             for signal in self.signals:
@@ -194,6 +206,10 @@ class BodyRow:
 
     def do_update(self) -> None:
         for child in self.children:
+            if self.y % 2 == 0:
+                child.label.configure(bootstyle="light-inverse")  # type: ignore
+            else:
+                child.label.configure(bootstyle="default")  # type: ignore
             if child.dynamic:
                 child.do_update()
 
@@ -216,12 +232,13 @@ class BodyRow:
 
 
 class SystemTab:
-    def __init__(self, parent: Frame, galaxy: Galaxy) -> None:
+    def __init__(self, parent: tb.Frame, galaxy: Galaxy) -> None:
         self.galaxy = galaxy
         self.parent = parent
-        self.frame = Frame(self.parent)
+        self.frame = tb.Frame(self.parent)
         self.frame.pack()
         self.rows: list[BodyRow] = []
+        self.headers: list[HeaderLabel] = []
 
     @property
     def bodies(self) -> dict[int, Planet]:
@@ -248,10 +265,10 @@ class SystemTab:
 
     def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
-        for i in range(len(headers)):
-            styledLabel(
-                text=headers[i], master=self.frame, bootstyle="inverse-info"
-            ).grid(row=0, column=i)
+        for i, header in enumerate(headers):
+            header_label = HeaderLabel(self.frame, text=header)
+            self.headers.append(header_label)
+            header_label.place_self(i)
 
     def sort_bodies(self) -> None:
         new_order = sorted(
