@@ -221,8 +221,12 @@ class System(BaseModel):
 
 
 class Galaxy(BaseModel):
-    systems: dict[int, System] = {}
-    current_system: System | None = None
+    systems: dict[int, System] = {
+        -1: System(
+            system_address=-1, system_name="Oops you broke it :(", star_pos=[0, 0, 0]
+        )
+    }
+    current_system_id: int = -1
 
     def jump_to_system(self, event: FSDJumpEvent) -> System:
         if event.SystemAddress in self.systems:
@@ -232,5 +236,9 @@ class Galaxy(BaseModel):
             visited=True,
         )
         self.systems[system.system_address] = system
-        self.current_system = system
+        self.current_system_id = system.system_address
         return system
+
+    @property
+    def current_system(self) -> System:
+        return self.systems[self.current_system_id]

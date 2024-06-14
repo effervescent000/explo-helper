@@ -22,7 +22,10 @@ def testing_galaxy() -> Galaxy:
         system_name="TEST SYSTEM",
     )
     system.planets[PRIMARY_PLANET_ID] = planet
-    return Galaxy(systems={PRIMARY_SYSTEM_ADDRESS: system}, current_system=system)
+    return Galaxy(
+        systems={PRIMARY_SYSTEM_ADDRESS: system},
+        current_system_id=system.system_address,
+    )
 
 
 @pytest.fixture
