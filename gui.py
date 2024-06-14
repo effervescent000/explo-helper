@@ -1,6 +1,7 @@
 from typing import Callable
 from ttkbootstrap import Frame, Label, Notebook
 
+
 from db.galaxy import BioSignal, Galaxy, Planet
 from journal_reader.journal_reader import JournalReader
 from trip_logger.trip import Trip
@@ -127,6 +128,16 @@ class SignalRow:
         self.children = []
 
 
+class HeaderLabel:
+    def __init__(self, master: Frame, text: str) -> None:
+        self.container = Frame(master, bootstyle="info")
+        self.label = Label(self.container, text=text)
+
+    def place_self(self, x: int) -> None:
+        self.container.grid(row=0, column=x)
+        self.label.pack(fill="x")
+
+
 class BodyLabel:
     def __init__(
         self,
@@ -222,6 +233,7 @@ class SystemTab:
         self.frame = Frame(self.parent)
         self.frame.pack()
         self.rows: list[BodyRow] = []
+        self.headers: list[HeaderLabel] = []
 
     @property
     def bodies(self) -> dict[int, Planet]:
@@ -245,13 +257,18 @@ class SystemTab:
         self.rows.append(row)
         self.sort_bodies()
         row.place_children()
+        # self.refresh_headers()
 
     def build_headers(self) -> None:
-        headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
-        for i in range(len(headers)):
-            styledLabel(
-                text=headers[i], master=self.frame, bootstyle="inverse-info"
-            ).grid(row=0, column=i)
+        headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
+        for i, header in enumerate(headers):
+            header_label = HeaderLabel(self.frame, text=header)
+            self.headers.append(header_label)
+            header_label.place_self(i)
+
+    # def refresh_headers(self) -> None:
+    #     for x in self.headers:
+    #         x.label.pack_configure(fill="x")
 
     def sort_bodies(self) -> None:
         new_order = sorted(
