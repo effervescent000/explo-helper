@@ -1,6 +1,6 @@
 from typing import Literal
 from conftest import PRIMARY_PLANET_ID, PRIMARY_SYSTEM_ADDRESS
-from db.galaxy import Planet
+from db.galaxy import BioSignal, Planet
 from journal_reader.journal_models import (
     EventType,
     FSSSignalEvent,
@@ -8,6 +8,7 @@ from journal_reader.journal_models import (
     JournalEvent,
     ScanEvent,
 )
+from signals.signals import Flora, species_list
 from utils.values import ROCKY
 
 
@@ -77,6 +78,19 @@ def fss_signal_event_factory(
     )
 
 
+def bio_signal_factory(
+    *,
+    species: Flora | None = None,
+    genus_found: bool = False,
+    species_found: bool = False,
+) -> BioSignal:
+    return BioSignal(
+        species=species or species_list[0],
+        genus_found=genus_found,
+        species_found=species_found,
+    )
+
+
 def planet_factory(
     *,
     StarSystem: str | None = None,
@@ -92,6 +106,8 @@ def planet_factory(
     atmosphere: str | None = None,
     gravity: float | None = None,
     mass: float | None = None,
+    signal_count: int | None = None,
+    signals: list[BioSignal] = [],
 ) -> Planet:
     return Planet(
         system_name=StarSystem or "DONT CARE",
@@ -107,4 +123,6 @@ def planet_factory(
         atmosphere=atmosphere or "None",
         surface_gravity=(gravity or 0) * 10,
         mass_em=mass,
+        signal_count=signal_count or 0,
+        signals=signals,
     )

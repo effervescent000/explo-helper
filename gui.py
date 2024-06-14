@@ -177,6 +177,11 @@ class BodyRow:
                 update_func=lambda x: f"{x.signal_count or ''}",
                 body=self.body,
             ),
+            BodyLabel(
+                parent_frame,
+                update_func=lambda x: x.bio_signal_value_label,
+                body=self.body,
+            ),
         ]
 
     def place_children(self) -> None:
@@ -242,9 +247,11 @@ class SystemTab:
         row.place_children()
 
     def build_headers(self) -> None:
-        headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
+        headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
         for i in range(len(headers)):
-            styledLabel(text=headers[i], master=self.frame).grid(row=0, column=i)
+            styledLabel(
+                text=headers[i], master=self.frame, bootstyle="inverse-info"
+            ).grid(row=0, column=i)
 
     def sort_bodies(self) -> None:
         new_order = sorted(
@@ -253,4 +260,4 @@ class SystemTab:
             reverse=True,
         )
         for row in self.rows:
-            row.move_to(new_order.index(row.body))
+            row.move_to(new_order.index(row.body) + 1)
