@@ -198,7 +198,7 @@ class BodyRow:
 
     def place_children(self) -> None:
         for x, child in enumerate(self.children):
-            child.label.grid(row=self.y * 2, column=x)
+            child.label.grid(row=self.y * 2, column=x, sticky="ew")
         if len(self.signals) > 0:
             self.signal_frame.grid(row=self.y * 2 + 1, column=1, columnspan=2)
             for signal in self.signals:
@@ -206,6 +206,10 @@ class BodyRow:
 
     def do_update(self) -> None:
         for child in self.children:
+            if self.y % 2 == 0:
+                child.label.configure(bootstyle="light-inverse")  # type: ignore
+            else:
+                child.label.configure(bootstyle="default")  # type: ignore
             if child.dynamic:
                 child.do_update()
 
@@ -258,7 +262,6 @@ class SystemTab:
         self.rows.append(row)
         self.sort_bodies()
         row.place_children()
-        # self.instantiate_headers()
 
     def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
@@ -266,12 +269,6 @@ class SystemTab:
             header_label = HeaderLabel(self.frame, text=header)
             self.headers.append(header_label)
             header_label.place_self(i)
-
-    # def instantiate_headers(self) -> None:
-    #     for i, header in enumerate(self.headers):
-    #         # header.label.pack_forget()
-    #         # header.label.pack(fill=X, expand=YES)
-    #         header.place_self(i)
 
     def sort_bodies(self) -> None:
         new_order = sorted(
