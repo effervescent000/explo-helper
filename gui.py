@@ -198,6 +198,13 @@ class BodyRow:
             x.label.destroy()
         self.children = []
 
+    def move_to(self, y: int) -> None:
+        self.y = y
+        for child in self.children:
+            child.label.grid_configure(row=self.y * 2)
+        if len(self.signals) > 0:
+            self.signal_frame.grid_configure(row=self.y * 2 + 1)
+
 
 class SystemTab:
     def __init__(self, parent: Frame, galaxy: Galaxy) -> None:
@@ -208,8 +215,12 @@ class SystemTab:
         self.rows: list[BodyRow] = []
 
     @property
+    def bodies(self) -> dict[int, Planet]:
+        return self.galaxy.current_system.planets
+
+    @property
     def body_count(self) -> int:
-        return len(self.galaxy.current_system.planets)
+        return len(self.bodies)
 
     def clear(self) -> None:
         for body in self.rows:
@@ -222,10 +233,20 @@ class SystemTab:
 
     def append_body(self, body: Planet) -> None:
         row = BodyRow(self.frame, y=self.body_count, body=body)
-        row.place_children()
         self.rows.append(row)
+        self.sort_bodies()
+        row.place_children()
 
     def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
         for i in range(len(headers)):
             styledLabel(text=headers[i], master=self.frame).grid(row=0, column=i)
+
+    def sort_bodies(self) -> None:
+        new_order = sorted(
+            [x for x in self.bodies.values()],
+            key=lambda x: x.values_estimate.total_value,
+            reverse=True,
+        )
+        for row in self.rows:
+            row.move_to(new_order.index(row.body))
