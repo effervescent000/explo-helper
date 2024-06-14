@@ -110,7 +110,11 @@ class SignalRow:
                 signal=self.signal,
                 update_func=lambda x: f"{x.species.genus} {x.species.species}",
             ),
-            SignalLabel(signal_frame, signal=self.signal, update_func=lambda _: "0"),
+            SignalLabel(
+                signal_frame,
+                signal=self.signal,
+                update_func=lambda x: f"{x.species.value:,}",
+            ),
         ]
 
     def place_children(self) -> None:
