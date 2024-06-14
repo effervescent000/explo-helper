@@ -37,7 +37,7 @@ concha_defaults = Flora(
     genus="Concha", min_distance_between=150, max_gravity=STANDARD_MAX_GRAVITY
 ).model_dump(exclude_none=True)
 
-species = [
+species_list = [
     # BACTERIA
     Flora(
         **bacteria_defaults,

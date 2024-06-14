@@ -1,3 +1,4 @@
+from typing import cast
 from pydantic import BaseModel
 
 from journal_reader.journal_models import (
@@ -7,8 +8,29 @@ from journal_reader.journal_models import (
     FSSSignalEvent,
     ScanEvent,
 )
-from signals.signals import Flora, species
+from signals.signals import Flora, species_list
 from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
+
+
+def get_bio_signal_values_from_list(
+    sorted_list: list["BioSignal"], count: int
+) -> list["BioSignal"]:
+    signals_to_value: list[BioSignal] = []
+    i = 0
+    while i < len(sorted_list) and len(signals_to_value) < count:
+        genuses_found = set(x.species.genus for x in signals_to_value)
+        signal = sorted_list[i]
+        if signal.species.genus not in genuses_found:
+            signals_to_value.append(signal)
+        i += 1
+    return signals_to_value
+
+
+class BodyBioValues(BaseModel):
+    min: float
+    max: float
+    actual: float = 0
+    bonuses: float
 
 
 class BodyCartographicValues(BaseModel):
@@ -67,9 +89,9 @@ class Planet(Body):
     signals: list[BioSignal] = []
 
     def make_possible_bio_signals(self) -> None:
-        species_list = []
+        maybe_species_list = []
 
-        for sp in species:
+        for sp in species_list:
             if (
                 sp.atmosphere_requirement is None
                 or len(sp.atmosphere_requirement) == 0
@@ -91,8 +113,8 @@ class Planet(Body):
             ):
                 continue
 
-            species_list.append(sp)
-        self.signals = [BioSignal(species=x) for x in species_list]
+            maybe_species_list.append(sp)
+        self.signals = [BioSignal(species=x) for x in maybe_species_list]
 
     def update_from_fss(self, event: ScanEvent) -> None:
         self.BodyName = event.BodyName
@@ -111,6 +133,31 @@ class Planet(Body):
         for signal in self.signals:
             if signal.species.genus in genuses:
                 signal.genus_found = True
+
+    @property
+    def bio_signal_values(self) -> BodyBioValues:
+        if self.signal_count < 1:
+            return BodyBioValues(min=0, max=0, actual=0, bonuses=0)
+        min_sorted = sorted(self.signals, key=lambda x: str(x.species.value))
+        signals_to_value_min = get_bio_signal_values_from_list(
+            min_sorted, self.signal_count
+        )
+
+        max_sorted = sorted(
+            self.signals, key=lambda x: str(x.species.value), reverse=True
+        )
+        signals_to_value_max = get_bio_signal_values_from_list(
+            max_sorted, self.signal_count
+        )
+
+        values = BodyBioValues(
+            min=sum(cast(int, x.species.value) for x in signals_to_value_min),
+            max=sum(cast(int, x.species.value) for x in signals_to_value_max),
+            actual=0,
+            bonuses=0,
+        )
+
+        return values
 
     def _calc_values(self, mapped_by_player: bool) -> BodyCartographicValues:
         k = PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
