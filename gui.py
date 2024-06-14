@@ -206,7 +206,10 @@ class SystemTab:
         self.frame = Frame(self.parent)
         self.frame.pack()
         self.rows: list[BodyRow] = []
-        self.y = 1
+
+    @property
+    def body_count(self) -> int:
+        return len(self.galaxy.current_system.planets)
 
     def clear(self) -> None:
         for body in self.rows:
@@ -218,10 +221,9 @@ class SystemTab:
             body.do_update()
 
     def append_body(self, body: Planet) -> None:
-        row = BodyRow(self.frame, y=self.y, body=body)
+        row = BodyRow(self.frame, y=self.body_count, body=body)
         row.place_children()
         self.rows.append(row)
-        self.y += 1
 
     def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
