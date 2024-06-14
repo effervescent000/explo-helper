@@ -192,6 +192,7 @@ class BodyRow:
         for x in self.signals:
             x.destroy()
         self.signals = []
+        self.signal_frame.destroy()
 
         for x in self.children:
             x.label.destroy()
