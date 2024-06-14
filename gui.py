@@ -249,7 +249,9 @@ class SystemTab:
     def build_headers(self) -> None:
         headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
         for i in range(len(headers)):
-            styledLabel(text=headers[i], master=self.frame).grid(row=0, column=i)
+            styledLabel(
+                text=headers[i], master=self.frame, bootstyle="inverse-info"
+            ).grid(row=0, column=i)
 
     def sort_bodies(self) -> None:
         new_order = sorted(
@@ -258,4 +260,4 @@ class SystemTab:
             reverse=True,
         )
         for row in self.rows:
-            row.move_to(new_order.index(row.body))
+            row.move_to(new_order.index(row.body) + 1)
