@@ -11,7 +11,7 @@ from signals.signals import Flora, species
 from utils.values import BASE, MEDIAN_MASS, TERRAFORMABLE, PLANET_VALUES, VALUES_ELSE
 
 
-class BodyValues(BaseModel):
+class BodyCartographicValues(BaseModel):
     base: float
     mapped: float
     bonuses: float
@@ -35,8 +35,8 @@ class Body(BaseModel):
         return self.BodyName.replace(self.system_name, "").strip()
 
     @property
-    def values_actual(self) -> BodyValues:
-        return BodyValues(base=0, mapped=0, bonuses=0)
+    def cartographic_values_actual(self) -> BodyCartographicValues:
+        return BodyCartographicValues(base=0, mapped=0, bonuses=0)
 
 
 class Star(Body):
@@ -112,14 +112,14 @@ class Planet(Body):
             if signal.species.genus in genuses:
                 signal.genus_found = True
 
-    def _calc_values(self, mapped_by_player: bool) -> BodyValues:
+    def _calc_values(self, mapped_by_player: bool) -> BodyCartographicValues:
         k = PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(BASE, 0)
         if self.terraformable:
             k += PLANET_VALUES.get(self.planet_class or "", VALUES_ELSE).get(
                 TERRAFORMABLE, 0
             )
 
-        values = BodyValues(base=0, mapped=0, bonuses=0)
+        values = BodyCartographicValues(base=0, mapped=0, bonuses=0)
 
         fss_value = k + (k * self.mass**0.2 * 0.56591828)
         fss_final_value = round(max(fss_value, 500))
@@ -154,11 +154,11 @@ class Planet(Body):
         return 0 if self.surface_gravity is None else self.surface_gravity / 10
 
     @property
-    def values_actual(self) -> BodyValues:
+    def cartographic_values_actual(self) -> BodyCartographicValues:
         return self._calc_values(self.mapped_by_player)
 
     @property
-    def values_estimate(self) -> BodyValues:
+    def cartographic_values_estimate(self) -> BodyCartographicValues:
         return self._calc_values(mapped_by_player=True)
 
     @property
@@ -230,7 +230,9 @@ class Galaxy(BaseModel):
 
     def jump_to_system(self, event: FSDJumpEvent) -> System:
         if event.SystemAddress in self.systems:
-            return self.systems[event.SystemAddress]
+            system = self.systems[event.SystemAddress]
+            system.visited = True
+            return system
         system = System(
             **event.dump(),
             visited=True,

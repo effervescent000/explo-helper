@@ -168,7 +168,7 @@ class BodyRow:
             ),
             BodyLabel(
                 parent_frame,
-                update_func=lambda x: f"{x.values_estimate.total_value:,}",
+                update_func=lambda x: f"{x.cartographic_values_estimate.total_value:,}",
                 body=self.body,
                 dynamic=True,
             ),
@@ -249,7 +249,7 @@ class SystemTab:
     def sort_bodies(self) -> None:
         new_order = sorted(
             [x for x in self.bodies.values()],
-            key=lambda x: x.values_estimate.total_value,
+            key=lambda x: x.cartographic_values_estimate.total_value,
             reverse=True,
         )
         for row in self.rows:
