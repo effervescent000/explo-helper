@@ -257,18 +257,13 @@ class SystemTab:
         self.rows.append(row)
         self.sort_bodies()
         row.place_children()
-        # self.refresh_headers()
 
     def build_headers(self) -> None:
-        headers = ["Name", "Type", "Mapped Value", "Biosignal Count"]
+        headers = ["Name", "Type", "Mapped Value", "Bio Count", "Bio Value"]
         for i, header in enumerate(headers):
             header_label = HeaderLabel(self.frame, text=header)
             self.headers.append(header_label)
             header_label.place_self(i)
-
-    # def refresh_headers(self) -> None:
-    #     for x in self.headers:
-    #         x.label.pack_configure(fill="x")
 
     def sort_bodies(self) -> None:
         new_order = sorted(
